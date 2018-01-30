@@ -122,7 +122,7 @@ class Trainer(object):
     def preprocessing(self):
         pass
 
-    def train(self, test_size=0.25, dumper=None):
+    def train(self, test_size=0.2, dumper=None):
 
         dataset, word_dictionary = self.datasource()
 
@@ -141,7 +141,7 @@ class Trainer(object):
         print('Dataset %s' % len(self.dataset))
         if len(self.dataset) == 0: return
 
-        train_set, test_set = train_test_split(self.dataset, test_size=test_size, random_state=0)
+        train_set, test_set = train_test_split(self.dataset, test_size=test_size, random_state=42)
 
 
         if not train_set or self.is_overfitting:
