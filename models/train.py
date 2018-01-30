@@ -122,7 +122,7 @@ class Trainer(object):
     def preprocessing(self):
         pass
 
-    def train(self, test_size=0.2, dumper=None):
+    def train(self, test_size=0.5, dumper=None):
 
         dataset, word_dictionary = self.datasource()
 

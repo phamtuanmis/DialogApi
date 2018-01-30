@@ -6,8 +6,9 @@ import os
 from data import PROJECT_PATH
 from sklearn.externals import joblib
 import csv
-from chappieml.train import *
-from chappieml.tokenizer import *
+from models.train import *
+from models.tokenizer import *
+
 
 class TrainClassifierTests(unittest.TestCase):
 
@@ -19,7 +20,7 @@ class TrainClassifierTests(unittest.TestCase):
             for row in lines:
                 sample = row.strip().decode('utf-8')
                 if not sample: continue
-                if sample[-1] == '_': continue
+                # if sample[-1] == '_': continue
                 if sample[:3] == '---':
                     intent_name = sample[3:].strip()
                     # print(intent_name)
@@ -63,32 +64,44 @@ class TrainClassifierTests(unittest.TestCase):
 
     def test_train_intent_classifier(self):
 
-        with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
-            model = joblib.load(f)
-        tokenizer = Tokenizer(model=model)
+        # with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
+        #     model = joblib.load(f)
+        tokenizer = None#Tokenizer(model=model)
 
         trainer = TrainClassifier(tokenizer=tokenizer)
         trainer.datasource = self.datasource
         trainer.is_overfitting = False
         trainer.classifiers = [
-            RandomForestClassifier,
+            # RandomForestClassifier,
             MultinomialNB,
             LinearSVC_proba,
-            RidgeClassifier,
-            DecisionTreeClassifier,
+            # RidgeClassifier,
+            # DecisionTreeClassifier,
             LogisticRegression,
-            AdaBoostClassifier,
+            # AdaBoostClassifier,
             SGDClassifier,
-            KNeighborsClassifier,
+            # KNeighborsClassifier,
             MLPClassifier,
         ]
-        trainer.tokenizer.synonyms = self.load_synonyms()
+        # trainer.tokenizer.synonyms = self.load_synonyms()
 
         model = trainer.train()
 
         with open(os.path.join(PROJECT_PATH, 'data/intents.model'), 'w') as f:
             joblib.dump(model, f)
 
+    def test_classifier(self):
+        sentences = [
+            u'Xin chào các bác',
+            u'tạm biệt nhé'
+        ]
+        with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
+            model = joblib.load(f)
+        traner = TrainClassifier(model = model)
+
+        for sentence in sentences:
+            pro =traner.classifiers(sentence)
+            print(pro)
 
 if __name__ == '__main__':
     # unittest.main()

@@ -1,10 +1,21 @@
----Welcome
+---ChaoHoi
 xin chào nhé
 ồ chào nhé
 chào các bác
 chào bác
 hey
 hi
+hello bác
+hê lô anh
+chào bác
+chào chú
+chào chị
+chào anh chị em
+chào mọi người
+chào tất cả
+khỏe chứ bác
+ni hảo
+ni hảo ma
 hế lô
 chào anh hôm nay khỏe không
 chào bác dạo này khỏe chứ
@@ -21,9 +32,19 @@ chào các bạn nhé
 xin chào
 hello
 chào bạn tôi nhé
----GoodBye
+---TamBiet
 chào tạm biệt nhé
 đi đây
+đi nhá
+đi thôi tạm biệt
+anh đi đây
+anh chào tạm biệt em nhá
+tạm biệt em
+tạm biệt hẹn gặp lại nhé
+bai bai em nhé
+bye anh em nhé
+tôi phải đi đây
+tôi cần đi đây
 tôi đi nhé
 tạm biệt
 bye nhé
@@ -70,6 +91,13 @@ cho tôi hỏi địa chỉ với chỗ nào bán tràng phục linh ý
 Cho hỏi giá tràng phục linh với
 tràng phục linh giá bao nhiêu tiền
 bao nhiêu một hộp tràng phục linh
+bao nhiêu một hộp
+một hộp bao nhiêu tiền
+bao nhiêu tiền một hộp thuốc ấy nhỉ
+một hộp thuốc thì bao nhiêu tiền ấy nhỉ
+cho tôi hỏi bao nhiêu một hộp thuốc vậy
+một vỉ thuốc giá bán bao nhiêu tiền vậy
+cho tôi xin giá thuốc với
 giá tiền vương bảo
 giá tiền niệu bảo
 bao nhiêu một hộp niệu bảo thế
@@ -87,7 +115,7 @@ cho xin cái giá
 rổ giá thế nào nhỉ
 cho tôi hỏi giá thuốc với
 thuốc giá thế nào
----SayThank
+---CamOn
 cám ơn nhé
 cám ơn cậu nhé
 thank you nhé
@@ -124,9 +152,127 @@ thật sự cảm ơn
 cảm ơn nhiều
 cảm ơn nhé bạn
 không biết phải cảm ơn thế nào nữa
----
----
----
----
+---CachDungThuoc
+thuốc này dùng thế nào
+cách dùng thuốc này thế nào
+thuốc tràng phục linh dùng thế nào
+cách sử dụng thuốc tràng phục linh
+cách dùng thuốc niệu bảo
+dùng thuốc niệu bảo như thế nào
+dùng thuốc này như thế nào
+sử dụng thuốc này như thế nào
+uống thuốc này như thế nào nhỉ
+chị cho hỏi cách dùng thuốc với
+cho tôi hỏi cách sử dụng thuốc với
+cho tôi biết cách sử dụng thuốc như thế nào nhỉ
+cho hỏi dùng thuốc xoang bách phục như thế nào nhỉ
+cho hỏi dùng thuốc này làm sao
+uống thuốc này như thế nào thì đúng
+cho tôi xin hướng dẫn sử dụng thuốc
+hướng dẫn tôi cách sử dụng thuốc với
+hướng dẫn tôi cách sử dụng thuốc như thế nào
+uống thuốc này thế nào vậy chị
+chỉ tôi cách sử dụng với
+cho tôi biết cách sử dụng với
+uống thuốc này như thế nào mới đúng cách
+cách uống thuốc hiệu quả
+uống thuốc như thế nào mới hiệu quả
+cho tôi biết uống thuốc tràng phục linh như thế nào mới hiệu quả nhỉ
+---KhenNgoi
+cậu giỏi quá
+giỏi
+giỏi ghê
+thông minh đấy
+tốt bụng quá
+cậu thông minh phết
+cậu thông minh đấy
+thông minh quá
+giỏi đấy
+giỏi phết
+tốt quá
+cậu tốt quá
+cậu tốt bụng quá
+được đấy
+thông minh ghê nhỉ
+tài phết
+thông minh quá cơ
+thông minh nhỉ
+cậu tài phết đấy
+thông minh thế nhỉ
+giỏi thế nhỉ
+thông minh quá cơ
+giỏi thật
+cậu giỏi phết nhỉ
+bạn thông minh quá
+bạn tài quá nhỉ
+bạn thông minh thật đấy
+bạn thông minh quá mà
+sao bạn thông minh thế
+sao bạn tài thế
+sao bạn tốt bụng thế
+sao bạn xinh xắn thế
+giọng bạn dễ thuơng thế
+dễ thương ghê
+đáng yêu ghê
+đáng yêu cực kỳ
+dễ thuơng cực kỳ
+bạn đáng yêu quá
+giọng bạn hay quá
+bạn nhiệt tình quá
+nhiệt tình
+bạn ngọt ngào quá
+bạn thật là đáng yêu
+bạn thật là ngọt ngào
+---CheBai
+kém quá
+tệ quá
+xấu quá
+hư quá
+tồi tệ quá
+ngu quá
+ngu xuẩn
+không thể chấp nhận được
+quá kém cỏi
+kém cỏi
+xấu xí
+bạn thật là kém cỏi
+mày kém quá
+vừa chậm vừa dốt
+dốt nát
+chậm chạp thế
+xấu tính quá
+kém thông minh
+chất lượng kém
+kém thế này
+sao kém vậy
+sao dốt vậy nhỉ
+không thông minh lắm
+tệ hại
+quá tệ đấy
+---WhoIsThis
+ai đấy
+cho hỏi ai thế nhỉ
+ai vậy
+cho tôi hỏi ai đấy
+ai đó nhỉ
+cho hỏi ai đứng đó
+cho hỏi ai vậy
+anh là ai
+chị là ai
+cô là ai
+bác là ai thế
+chị là ai vậy
+who
+chú là ai nhỉ
+chị là ai nhỉ
+cậu là ai vậy
+bạn là ai thế
+bạn tên gì
+bạn tên là gì
+tên bạn là gì
+tên chị là gì
+tên bác là gì
+bác tên là gì
+tên anh là gì nhỉ
 ---
 
