@@ -1,0 +1,136 @@
+# -*- coding: utf-8 -*-
+from __future__ import print_function
+import re
+
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction import DictVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+
+VN_CHARS_LOWER = u'ạảãàáâậầấẩẫăắằặẳẵóòọõỏôộổỗồốơờớợởỡéèẻẹẽêếềệểễúùụủũưựữửừứíìịỉĩýỳỷỵỹđð'
+VN_CHARS_UPPER = u'ẠẢÃÀÁÂẬẦẤẨẪĂẮẰẶẲẴÓÒỌÕỎÔỘỔỖỒỐƠỜỚỢỞỠÉÈẺẸẼÊẾỀỆỂỄÚÙỤỦŨƯỰỮỬỪỨÍÌỊỈĨÝỲỶỴỸÐĐ'
+VN_CHARS = VN_CHARS_LOWER + VN_CHARS_UPPER
+
+
+def no_marks(s):
+    __INTAB = [ch for ch in VN_CHARS]
+    __OUTTAB = "a"*17 + "o"*17 + "e"*11 + "u"*11 + "i"*5 + "y"*5 + "d"*2
+    __OUTTAB += "A"*17 + "O"*17 + "E"*11 + "U"*11 + "I"*5 + "Y"*5 + "D"*2
+    __r = re.compile("|".join(__INTAB))
+    __replaces_dict = dict(zip(__INTAB, __OUTTAB))
+    result = __r.sub(lambda m: __replaces_dict[m.group(0)], s)
+    return result
+
+
+def text_similarity(items):
+    f = CountVectorizer().fit_transform(items)
+    return cosine_similarity(f[0], f[1])[0][0]
+
+
+def similarity(items):
+
+    if len(items) < 2: return 0
+    # for item in items: print(item)
+
+    f = DictVectorizer().fit_transform(items)
+    return cosine_similarity(f[0], f[1])[0][0]
+
+
+def pre_processing(items, ignore_keys=list(), weighting=dict()):
+
+    # pre-processing
+    for item in items:
+        for k, v in item.items():
+            if not v:
+                v = 0
+                item[k] = v
+            if k in ignore_keys:
+                del(item[k])
+            elif isinstance(v, list):
+                for i in range(0, len(v)):
+                    item['%s-%d' % (k, i)] = str(v[i])
+                del(item[k])
+            elif isinstance(v, float):
+                item[k] = int(round(v))
+            elif not isinstance(v, int):
+                item[k] = str(v)
+
+    # build vocabulary for feature with string value
+    vocab = dict()
+    for item in items:
+        for k, v in item.items():
+            if isinstance(v, str) or isinstance(v, unicode):
+                # print(k,v)
+                if k not in vocab:
+                    vocab[k] = dict()
+                if v not in vocab[k]:
+                    vocab[k][v] = len(vocab[k])
+                    if k in weighting:
+                        vocab[k][v] = vocab[k][v] * weighting[k]
+
+    # update value of feature with vocabulary
+    for item in items:
+        for k, v in item.items():
+            if k in vocab and v in vocab[k]:
+                item[k] = vocab[k][v]
+
+    return vocab
+
+
+def test_similarity():
+    print(text_similarity(['hello 2', 'hello world']))
+
+    print('---')
+
+    d1 = {
+        'k1': 1,
+        'k2': 2.3,
+        'k3': 8,
+        'k4': 10,
+        'k5': 'a',
+        'k6': ['a', 'b', 'c'],
+    }
+
+    d2 = {
+        'k1': 1,
+        'k2': 2.1,
+        'k3': 7,
+        'k4': 11,
+        'k5': 'b',
+        'k6': ['c', 'e', 'f'],
+    }
+
+    d3 = {
+        'k1': 1,
+        'k2': 2.3,
+        'k3': 8,
+        'k4': 9,
+        'k5': 'b',
+        'k6': ['b', 'c', 'd'],
+    }
+
+    pre_processing([d1, d2, d3])
+
+    print(similarity([d1, d2]))
+    print(similarity([d1, d3]))
+    print(similarity([d2, d3]))
+    print(similarity([d1, d2, d3]))
+
+
+def document_to_sents(document):
+    regex = re.compile(r'\.|;|tuy nhiên|tuy vậy|thế nhưng|nhưng mà|tuy|nhưng|mặc dù|mặc cho|thay vào đó|cơ mà'.decode('utf-8'))
+    return [v.strip() for v in regex.split(document)]
+
+def test_document_to_sents():
+    document = u'Vừa qua Kia giới thiệu mẫu Rio mới tại triển lãm ô tô tại Quận 7. Mặc dù ngoại thất của kia rio rất đẹp nhưng nội thất thì không tương xứng.'
+
+    sents = document_to_sents(document)
+
+    for sent in sents:
+        print(sent)
+
+
+if __name__ == '__main__':
+    # test_similarity()
+    test_document_to_sents()
+
