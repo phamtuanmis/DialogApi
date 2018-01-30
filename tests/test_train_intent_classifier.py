@@ -7,7 +7,7 @@ from data import PROJECT_PATH
 from sklearn.externals import joblib
 import csv
 from models.train import *
-from models.tokenizer import *
+from models.classifier import *
 
 
 class TrainClassifierTests(unittest.TestCase):
@@ -97,10 +97,10 @@ class TrainClassifierTests(unittest.TestCase):
         ]
         with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
             model = joblib.load(f)
-        traner = TrainClassifier(model = model)
+        traner = Classifier(model = model)
 
         for sentence in sentences:
-            pro =traner.classifiers(sentence)
+            pro =traner.predict(sentence)
             print(pro)
 
 if __name__ == '__main__':
