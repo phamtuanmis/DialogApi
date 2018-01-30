@@ -5,7 +5,7 @@ import string
 from models import PUNCT_REGEX
 
 
-class ChappieTokenizer(object):
+class Tokenizer(object):
     '''
     Chappie Tokenizer with Pos Tagging Model
     '''

@@ -77,60 +77,8 @@ def pre_processing(items, ignore_keys=list(), weighting=dict()):
     return vocab
 
 
-def test_similarity():
-    print(text_similarity(['hello 2', 'hello world']))
-
-    print('---')
-
-    d1 = {
-        'k1': 1,
-        'k2': 2.3,
-        'k3': 8,
-        'k4': 10,
-        'k5': 'a',
-        'k6': ['a', 'b', 'c'],
-    }
-
-    d2 = {
-        'k1': 1,
-        'k2': 2.1,
-        'k3': 7,
-        'k4': 11,
-        'k5': 'b',
-        'k6': ['c', 'e', 'f'],
-    }
-
-    d3 = {
-        'k1': 1,
-        'k2': 2.3,
-        'k3': 8,
-        'k4': 9,
-        'k5': 'b',
-        'k6': ['b', 'c', 'd'],
-    }
-
-    pre_processing([d1, d2, d3])
-
-    print(similarity([d1, d2]))
-    print(similarity([d1, d3]))
-    print(similarity([d2, d3]))
-    print(similarity([d1, d2, d3]))
-
-
-def document_to_sents(document):
-    regex = re.compile(r'\.|;|tuy nhiên|tuy vậy|thế nhưng|nhưng mà|tuy|nhưng|mặc dù|mặc cho|thay vào đó|cơ mà'.decode('utf-8'))
-    return [v.strip() for v in regex.split(document)]
-
-def test_document_to_sents():
-    document = u'Vừa qua Kia giới thiệu mẫu Rio mới tại triển lãm ô tô tại Quận 7. Mặc dù ngoại thất của kia rio rất đẹp nhưng nội thất thì không tương xứng.'
-
-    sents = document_to_sents(document)
-
-    for sent in sents:
-        print(sent)
 
 
 if __name__ == '__main__':
     # test_similarity()
-    test_document_to_sents()
-
+    pass
