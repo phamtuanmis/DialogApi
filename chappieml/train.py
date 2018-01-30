@@ -26,9 +26,9 @@ from models import TrainModel
 from models import LinearSVC_proba
 
 
-class ChappieTrainer(object):
+class Trainer(object):
     '''
-    Chappie Trainer
+    Trainer
     '''
     def __init__(self, tokenizer=None, separator=' '):
 
@@ -148,13 +148,10 @@ class ChappieTrainer(object):
             train_set = self.dataset
             test_set = self.dataset
 
-        best_feature_func = self.features
-
         taggers = list()
 
 
         feature_func = self.features
-        best_feature_func = feature_func
 
         for feature_extraction in self.feature_extractions:
 
@@ -204,11 +201,9 @@ class ChappieTrainer(object):
                 if accuracy >= max_accuracy:
                     max_accuracy = accuracy
                     best_classifier = clf
-                    best_feature_func = self.features
 
         if not best_classifier:
             best_classifier = clf
-            best_feature_func = self.features
 
         feature_extraction = 'dict' if best_classifier.__class__.__name__ == 'CRF' \
             else best_classifier.steps[0][0]
@@ -235,11 +230,11 @@ class ChappieTrainer(object):
 
 
 
-class ChappieTrainClassifier(ChappieTrainer):
+class TrainClassifier(Trainer):
 
     def __init__(self, tokenizer=None):
 
-        super(ChappieTrainClassifier, self).__init__(tokenizer=tokenizer)
+        super(TrainClassifier, self).__init__(tokenizer=tokenizer)
 
         self.punct_regex = re.compile(self.model.punct_regex, re.UNICODE | re.MULTILINE | re.DOTALL)
 

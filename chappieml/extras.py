@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import re
-
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
 
 VN_CHARS_LOWER = u'ạảãàáâậầấẩẫăắằặẳẵóòọõỏôộổỗồốơờớợởỡéèẻẹẽêếềệểễúùụủũưựữửừứíìịỉĩýỳỷỵỹđð'
 VN_CHARS_UPPER = u'ẠẢÃÀÁÂẬẦẤẨẪĂẮẰẶẲẴÓÒỌÕỎÔỘỔỖỒỐƠỜỚỢỞỠÉÈẺẸẼÊẾỀỆỂỄÚÙỤỦŨƯỰỮỬỪỨÍÌỊỈĨÝỲỶỴỸÐĐ'
@@ -31,7 +29,6 @@ def similarity(items):
 
     if len(items) < 2: return 0
     # for item in items: print(item)
-
     f = DictVectorizer().fit_transform(items)
     return cosine_similarity(f[0], f[1])[0][0]
 

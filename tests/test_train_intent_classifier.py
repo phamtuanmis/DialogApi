@@ -67,22 +67,22 @@ class TrainClassifierTests(unittest.TestCase):
             model = joblib.load(f)
         tokenizer = Tokenizer(model=model)
 
-        trainer = ChappieTrainClassifier(tokenizer=tokenizer)
+        trainer = TrainClassifier(tokenizer=tokenizer)
         trainer.datasource = self.datasource
-        trainer.is_overfitting = True
+        trainer.is_overfitting = False
         trainer.classifiers = [
-            # RandomForestClassifier,
-            # MultinomialNB,
+            RandomForestClassifier,
+            MultinomialNB,
             LinearSVC_proba,
-            # RidgeClassifier,
-            # DecisionTreeClassifier,
-            # LogisticRegression,
-            # AdaBoostClassifier,
-            # SGDClassifier,
-            # KNeighborsClassifier,
-            # MLPClassifier,
+            RidgeClassifier,
+            DecisionTreeClassifier,
+            LogisticRegression,
+            AdaBoostClassifier,
+            SGDClassifier,
+            KNeighborsClassifier,
+            MLPClassifier,
         ]
-        # trainer.tokenizer.synonyms = self.load_synonyms()
+        trainer.tokenizer.synonyms = self.load_synonyms()
 
         model = trainer.train()
 

@@ -9,7 +9,7 @@ hế lô
 chào anh hôm nay khỏe không
 chào bác dạo này khỏe chứ
 chào
-Xin chào
+xin chào
 chào anh
 cháu chào bác
 chào các bạn nhé
@@ -22,7 +22,7 @@ xin chào
 hello
 chào bạn tôi nhé
 ---GoodBye
-Chào tạm biệt nhé
+chào tạm biệt nhé
 đi đây
 tôi đi nhé
 tạm biệt
