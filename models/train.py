@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 # from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 
-from sklearn_crfsuite import CRF
+# from sklearn_crfsuite import CRF
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import MultinomialNB
@@ -264,11 +264,11 @@ class Trainer(object):
                                                         target_names=classes,digits=3))
                     accuracy = clf.score(X_test, y_test)
 
-                    for y1,y2,x in zip(y_test,y_pred,X_test):
-                        if y1!=y2:
-                            print('Sentence: ',x)
-                            print('True label',y1)
-                            print('Predict label',y2)
+                    # for y1,y2,x in zip(y_test,y_pred,X_test):
+                    #     if y1!=y2:
+                    #         print('Sentence: ',x)
+                    #         print('True label',y1)
+                    #         print('Predict label',y2)
 
 
                     print('feature extraction %s, classifier %s, accuracy: %s' % \
@@ -308,150 +308,6 @@ class Trainer(object):
         self.taggers = taggers
 
         return self.model
-
-    def visualize(self, labels=None):
-        mode = 'dict' if self.model.pipeline.__class__.__name__ == 'CRF' \
-        else self.model.pipeline.steps[0][0]
-
-        if not labels:
-            labels = self.model.pipeline.classes_
-
-        from sklearn.decomposition import PCA
-        from matplotlib import pyplot as plt
-        from mpl_toolkits.mplot3d import Axes3D
-        from mpl_toolkits.mplot3d import proj3d
-
-        dataset, word_dictionary = self.datasource()
-
-        classifier_name = self.model.pipeline.__class__.__name__ if self.model.pipeline.__class__.__name__ == 'CRF' \
-            else self.model.pipeline.steps[-1][1].__class__.__name__
-
-        pipeline = Pipeline([
-            (mode, self.model.pipeline.steps[0][1] if 'steps' in self.model.pipeline.__dict__ \
-                else self.model.pipeline),
-        ])
-
-        if mode == 'count':
-            self.features = self.features__
-
-        if classifier_name == 'CRF':
-            X_set, y_set = self.crf_transform_to_dataset(dataset)
-        else:
-            X_set, y_set = self.classify_transform_to_dataset(dataset)
-
-        if mode == 'dict':
-            X = pipeline.fit_transform(X_set, y_set)
-        else:
-            X = pipeline.fit_transform(X_set,y_set).todense()
-
-        fig = plt.figure(figsize=(9, 9))
-        ax = fig.add_subplot(111, projection='3d')
-        plt.rcParams['legend.fontsize'] = 8
-
-        pca = PCA(n_components = 3).fit(X)
-        data2D = pca.transform(X)
-        n_label = len(labels)
-
-        color = ['r','b','y','m','g','m','c']
-        n = len(color)
-        for i in range(n, n_label):
-            color.append(str(1.0*i/n_label))
-        mark  = [ '*', 'x', 'o','^', '+', '>', '<', 'p', '^', 'h', 'H', 'D', 'd']
-        n = len(mark)
-        for i in range(n, n_label):
-            mark.append(mark[i % n])
-
-        x = data2D[:, 0]
-        y = data2D[:, 1]
-        z = data2D[:, 2]
-        plots = []
-        for i in range(n_label):
-            plot = None
-            for j in range(len(x)):
-                if y_set[j] == labels[i]:
-                    plot = ax.scatter(x[j], y[j],z[j],c=color[i], marker=mark[i],label = labels[i])
-            if plot:
-                plots.append(plot)
-        ax.legend(plots,labels)
-        # ax.set_xlim3d(-100, 150)#limit range of X
-        # ax.set_ylim3d(-60, 60)
-        # ax.set_zlim3d(-60, 40)
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        plt.show()
-
-
-class TrainTokenizer(Trainer):
-    def __init__(self, tokenizer=None):
-        super(TrainTokenizer, self).__init__()
-        self.tokenizer = tokenizer
-        self.classifiers = [
-            CRF
-        ]
-
-    def features(self, sent, index=0):
-        import string
-        word = sent[index]
-
-        features = {
-            'word': word,
-            'len':len(word),
-            'word_lowwer': word.lower(),
-            'word_upper': word.upper(),
-            'is_first': index == 0,
-            'is_last': index == len(sent) - 1,
-            'word[:1]': word[:1],
-            'word[:2]': word[:2],
-            'word[:3]': word[:3],
-            'word[:4]': word[:4],
-            'word[:5]': word[:5],
-            'word[:6]': word[:6],
-            'word[-6:]': word[-6:],
-            'word[-5:]': word[-5:],
-            'word[-4:]': word[-4:],
-            'word[-3:]': word[-3:],
-            'word[-2:]': word[-2:],
-            'word[-1:]': word[-1:],
-            'word.is_lower': word.islower(),
-            'word.is_upper': word.isupper(),
-            'word.is_title': word.istitle(),
-            'word.is_digit': word.isdigit(),
-            'is_all_caps': word.upper() == word,
-            'capitals_inside': word[1:].lower() != word[1:],
-            'prev_word': '' if index == 0 else sent[index - 1],
-            'prev_word2': ' ' if index == 0 or index == 1 else sent[index - 2],
-            'next_word': '' if index == len(sent) - 1 else sent[index + 1],
-            'next_word2': ' ' if index == len(sent) - 1 or index == len(sent) - 2 else sent[index + 2],
-            'is_punctuation': word in string.punctuation
-
-        }
-
-        n_grams = (4, 3, 2)
-        size_sent = len(sent)
-        for n_gram in n_grams:
-            tokens = list()
-            for i in range(index, index + n_gram):
-                if i < size_sent:
-                    tokens.append(sent[i])
-
-            word = ' '.join(tokens)
-            gram = self.model.word_dictionary.get(word.lower(), -1) + 1
-            feature_name = '%s-gram' % gram
-            features.update({
-                feature_name: gram > 0,
-                '%s.word[0]'% feature_name: word.split(' ')[0],
-                # '%s.word'% feature_name : word,
-                # '%s.word.is_lower' % feature_name: word.islower(),
-                # '%s.word.is_upper' % feature_name: word.isupper(),
-                # '%s.word.is_title' % feature_name: word.istitle(),
-                # '%s.word.is_digit' % feature_name: word.isdigit(),
-                # '%s.is_all_caps' % feature_name: word.upper() == word,
-                # '%s.capitals_inside': word[1:].lower() != word[1:],
-            })
-        return features
-
-
 
 
 class TrainClassifier(Trainer):
