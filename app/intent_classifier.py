@@ -72,8 +72,8 @@ class TrainClassifierTests(unittest.TestCase):
 
     def test_train_intent_classifier(self):
 
-        with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
-            model = joblib.load(f)
+        # with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
+        #     model = joblib.load(f)
         tokenizer = None#Tokenizer(model=model)
 
         trainer = TrainClassifier(tokenizer=tokenizer)
@@ -125,6 +125,9 @@ class TrainClassifierTests(unittest.TestCase):
             labels = classifier.predict(document)
             print(labels)
 
-if __name__ == '__main__':
-    # unittest.main()
-    pass
+    def make_response(self,querry):
+        with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
+            model = joblib.load(f)
+        classifier = Classifier(model=model)
+        intent = classifier.predict(querry)
+        return {'querry':querry,'intent':intent,}

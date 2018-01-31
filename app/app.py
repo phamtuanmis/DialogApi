@@ -1,6 +1,14 @@
+# -*- coding:utf8 -*-
 # !/usr/bin/env python
-# -*- coding: utf-8 -*-
 from __future__ import print_function
+from future.standard_library import install_aliases
+import json
+from flask import Flask, jsonify, request, make_response
+import os.path
+import sys
+import re
+import requests
+from flask_cors import CORS, cross_origin
 import unittest
 import os
 from data import PROJECT_PATH
@@ -9,7 +17,59 @@ import csv
 from models.train import *
 from models.classifier import *
 
-class TrainClassifierTests(unittest.TestCase):
+install_aliases()
+app = Flask(__name__)
+cors = CORS(app)
+
+
+@app.errorhandler(400)
+def not_found(error):
+    return make_response(jsonify({'error': 'Bad request! Thiếu thông tin'}), 400)
+
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
+
+@app.route('/conversation', methods=['POST'])
+# @cross_origin()
+
+def conversation():
+    req = request.get_json(silent=True, force=True)
+    # print(json.dumps(req,encoding='utf8',ensure_ascii=False,indent=4))
+    res = processRequest(req)
+    res = json.dumps(res, indent=4)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
+    return r
+
+def processRequest(req):
+    query = req["query"]
+    sessionId = req["sessionId"]
+    myclass = TrainClassifierTests()
+    intent = myclass.make_response2(query,sessionId)
+    response = {'querry': query, 'intent': intent,'sessionId':sessionId }
+    return response
+
+
+@app.route('/train', methods=['POST'])
+@cross_origin()
+
+def train():
+    req = request.get_json(silent=True, force=True)
+    res = processTrain(req)
+    res = json.dumps(res, indent=4)
+    r = make_response(res)
+    r.headers['Content-Type'] = 'application/json'
+    return r
+
+def processTrain(req):
+    botId = req["botId"]
+    myclass = TrainClassifierTests()
+    myclass.test_train_intent_classifier()
+    response = {'querry': 'DONE','BotID':botId }
+    return response
+
+class TrainClassifierTests():
     def load_data_set2(self):
         dataset = list()
         with open(os.path.join(PROJECT_PATH, 'data', 'intents.txt')) as f:
@@ -50,7 +110,6 @@ class TrainClassifierTests(unittest.TestCase):
 
         return dataset
 
-
     def load_intents_dictionary(self):
         dictionary = dict()
         with open(os.path.join(PROJECT_PATH, 'data', 'intents_dictionary.csv')) as f:
@@ -63,7 +122,6 @@ class TrainClassifierTests(unittest.TestCase):
 
         return dictionary
 
-
     def datasource(self):
 
         dataset = self.load_data_set2()
@@ -72,9 +130,9 @@ class TrainClassifierTests(unittest.TestCase):
 
     def test_train_intent_classifier(self):
 
-        with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
-            model = joblib.load(f)
-        tokenizer = None#Tokenizer(model=model)
+        # with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
+        #     model = joblib.load(f)
+        tokenizer = None  # Tokenizer(model=model)
 
         trainer = TrainClassifier(tokenizer=tokenizer)
         trainer.datasource = self.datasource
@@ -125,6 +183,14 @@ class TrainClassifierTests(unittest.TestCase):
             labels = classifier.predict(document)
             print(labels)
 
+    def make_response2(self, querry,sessionId):
+        with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
+            model = joblib.load(f)
+        classifier = Classifier(model=model)
+        intent = classifier.predict(querry)[0]
+        return intent
+
 if __name__ == '__main__':
-    # unittest.main()
-    pass
+    port = int(os.getenv('PORT', 5000))
+    print("Starting app on port %d" % port)
+    app.run(debug=True, port=port,host = '0.0.0.0')

@@ -28,7 +28,7 @@ class Tokenizer(object):
 
         self.punct_regex = re.compile(self.model.punct_regex, re.UNICODE | re.MULTILINE | re.DOTALL)
         self.word_dictionary = self.model.word_dictionary
-        exec(self.model.features, self.__dict__)
+        # exec(self.model.features, self.__dict__)
 
     def tagging(self, sent):
         if not self.model.pipeline:

@@ -5,8 +5,7 @@ import re
 
 from sklearn.feature_extraction.text import CountVectorizer
 from lxml import html as html_parser
-import string
-import time
+
 
 
 class Classifier(object):
@@ -28,16 +27,12 @@ class Classifier(object):
 
         self.punct_regex = re.compile(self.model.punct_regex, re.UNICODE | re.MULTILINE | re.DOTALL)
         self.word_dictionary = self.model.word_dictionary
-
-
         exec(self.model.features, self.__dict__)
 
     def predict(self, document):
 
         if not self.model.pipeline:
             raise Exception('Need load model first')
-
-        labels = self.predict_method(
-            [self.features(self, document)])
+        labels = self.predict_method([self.features(self, document)])
 
         return labels
