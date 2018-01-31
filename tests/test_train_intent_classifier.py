@@ -72,27 +72,28 @@ class TrainClassifierTests(unittest.TestCase):
 
     def test_train_intent_classifier(self):
 
-        with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
-            model = joblib.load(f)
+        # with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
+        #     model = joblib.load(f)
         tokenizer = None#Tokenizer(model=model)
 
         trainer = TrainClassifier(tokenizer=tokenizer)
         trainer.datasource = self.datasource
         trainer.is_overfitting = False
+        trainer.model.use_tfidf = False
         trainer.classifiers = [
-            RandomForestClassifier,
-            MultinomialNB,
-            LinearSVC_proba,
-            DecisionTreeClassifier,
+            # RandomForestClassifier,
+            # MultinomialNB,
+            # LinearSVC_proba,
+            # DecisionTreeClassifier,
             LogisticRegression,
-            AdaBoostClassifier,
-            SGDClassifier,
-            KNeighborsClassifier,
-            MLPClassifier,
+            # AdaBoostClassifier,
+            # SGDClassifier,
+            # KNeighborsClassifier,
+            # MLPClassifier,
         ]
         # trainer.tokenizer.synonyms = self.load_synonyms()
 
-        # trainer.train()
+        trainer.train()
         trainer.is_overfitting = True
         model = trainer.train()
         with open(os.path.join(PROJECT_PATH, 'data/intents.model'), 'w') as f:

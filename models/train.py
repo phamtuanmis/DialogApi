@@ -177,7 +177,7 @@ class Trainer(object):
         # print('Dataset %s' % len(self.dataset))
         if len(self.dataset) == 0: return
 
-        train_set, test_set = train_test_split(self.dataset, test_size=test_size, random_state=0)
+        train_set, test_set = train_test_split(self.dataset, test_size=test_size, random_state=10)
 
 
         if not train_set or self.is_overfitting:
@@ -264,11 +264,11 @@ class Trainer(object):
                                                         target_names=classes,digits=3))
                     accuracy = clf.score(X_test, y_test)
 
-                    # for y1,y2,x in zip(y_test,y_pred,X_test):
-                    #     if y1!=y2:
-                    #         print('Sentence: ',x)
-                    #         print('True label',y1)
-                    #         print('Predict label',y2)
+                    for y1,y2,x in zip(y_test,y_pred,X_test):
+                        if y1!=y2:
+                            print('Sentence: ',x)
+                            print('True label',y1)
+                            print('Predict label',y2)
 
 
                     print('feature extraction %s, classifier %s, accuracy: %s' % \
