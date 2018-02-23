@@ -16,6 +16,8 @@ from sklearn.externals import joblib
 import csv
 from models.train import *
 from models.classifier import *
+from flask import Flask
+from conect_db import get_train_data,get_answers
 
 install_aliases()
 app = Flask(__name__)
@@ -46,8 +48,19 @@ def processRequest(req):
     query = req["query"]
     sessionId = req["sessionId"]
     myclass = TrainClassifierTests()
-    intent = myclass.make_response2(query,sessionId)
-    response = {'querry': query, 'intent': intent,'sessionId':sessionId }
+    result = myclass.classify_intent(query, sessionId)
+    # print(result)
+    intent = result[0]
+    intent_confident = result[1]
+    response = result[2]
+    response = {
+        'resolvedQuery': query,
+        'intentName':intent,
+        'response': response,
+        'sessionId':sessionId,
+        'confidence': intent_confident,
+
+    }
     return response
 
 
@@ -65,7 +78,7 @@ def train():
 def processTrain(req):
     botId = req["botId"]
     myclass = TrainClassifierTests()
-    myclass.test_train_intent_classifier()
+    myclass.trainmodel()
     response = {'querry': 'DONE','BotID':botId }
     return response
 
@@ -124,32 +137,31 @@ class TrainClassifierTests():
 
     def datasource(self):
 
-        dataset = self.load_data_set2()
+        dataset = get_train_data()#self.load_data_set2()
         word_dictionary = self.load_intents_dictionary()
         return dataset, word_dictionary
 
-    def test_train_intent_classifier(self):
+    def trainmodel(self):
 
         # with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
         #     model = joblib.load(f)
         tokenizer = None  # Tokenizer(model=model)
-
         trainer = TrainClassifier(tokenizer=tokenizer)
         trainer.datasource = self.datasource
-        trainer.is_overfitting = False
+        trainer.model.answers = get_answers()
         trainer.classifiers = [
-            RandomForestClassifier,
-            MultinomialNB,
-            LinearSVC_proba,
-            DecisionTreeClassifier,
-            LogisticRegression,
-            AdaBoostClassifier,
-            SGDClassifier,
-            KNeighborsClassifier,
+            # RandomForestClassifier,
+            # MultinomialNB,
+            # LinearSVC_proba,
+            # DecisionTreeClassifier,
+            # LogisticRegression,
+            # AdaBoostClassifier,
+            # SGDClassifier,
+            # KNeighborsClassifier,
             MLPClassifier,
         ]
         # trainer.tokenizer.synonyms = self.load_synonyms()
-
+        # trainer.is_overfitting = False
         # trainer.train()
         trainer.is_overfitting = True
         model = trainer.train()
@@ -183,11 +195,21 @@ class TrainClassifierTests():
             labels = classifier.predict(document)
             print(labels)
 
-    def make_response2(self, querry,sessionId):
+    def classify_intent(self,query, sessionId):
         with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
             model = joblib.load(f)
         classifier = Classifier(model=model)
-        intent = classifier.predict(querry)[0]
+        intent = classifier.predict(query)
+        answers = classifier.anwers
+        # print(classifier.predict(query)[0])
+        if intent[1] >= 0.5:
+            for data in answers:
+                if intent[0] == data[0]:
+                    intent.append(data[1])
+        else:
+            intent[0]='not_define'
+            intent.append(u'Chatbot chưa được học vấn đề này')
+
         return intent
 
 if __name__ == '__main__':

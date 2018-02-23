@@ -9,13 +9,11 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 
 # from sklearn_crfsuite import CRF
-
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import SGDClassifier
-# from sklearn.linear_model import RidgeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -38,10 +36,10 @@ class Trainer(object):
     def __init__(self, tokenizer=None, separator=' '):
 
         self.separator = separator
-
         self.model = TrainModel()
 
         self.model.word_dictionary = dict()
+        self.model.answers = list()
         self.model.pipeline = None  # Pipeline()
         self.model.features = textwrap.dedent(inspect.getsource(self.features))
         self.model.use_tfidf = False
@@ -56,30 +54,25 @@ class Trainer(object):
                 max_features=self.model.max_features,
                 tokenizer=self.tokenizer.tokenize if self.tokenizer else None,
              )),
-            ('dict', DictVectorizer(sparse=False))
+            # ('dict', DictVectorizer(sparse=False)),
+            # ('tfidf',TfidfVectorizer()),
         ]
 
         self.classifiers = [
+            RandomForestClassifier,
             MultinomialNB,
+            LinearSVC_proba,
+            DecisionTreeClassifier,
+            LogisticRegression,
+            AdaBoostClassifier,
+            SGDClassifier,
+            KNeighborsClassifier,
+            MLPClassifier,
         ]
 
         self.taggers = None
         self.dumper = None
 
-    def set_feature_extraction(self, mode='dict'):
-        if mode == 'dict':
-            self.feature_extractions = [
-                ('dict', DictVectorizer(sparse=False))
-            ]
-        elif mode == 'count':
-            self.feature_extractions = [
-                ('count', CountVectorizer(
-                    ngram_range=(1, 2),
-                    max_features=self.model.max_features,
-                    tokenizer=self.tokenizer.tokenize if self.tokenizer else None,
-
-                ))
-            ]
 
     def get_classifier(self, cls):
         cls_ = None
@@ -92,7 +85,7 @@ class Trainer(object):
                 elif cls.__name__ == 'RandomForestClassifier':
                     cls_ = RandomForestClassifier(n_estimators=300)
                 elif cls.__name__ == 'MLPClassifier':
-                    cls_ = MLPClassifier(hidden_layer_sizes=(200,))
+                    cls_ = MLPClassifier(hidden_layer_sizes=(100,100),)
                 else:
                     cls_ = c()
         return ('classifier', cls_)
@@ -106,39 +99,14 @@ class Trainer(object):
 
     def features(self, sent, index=0):
         word = sent[index]
-        return {
-            'word': word,
-        }
+        return sent
+        # return {
+        #     'word': word,
+        # }
 
     def untag(self, tagged_sentence):
         return [w for w, t in tagged_sentence]
 
-    def transform_to_dataset(self, tagged_sentences):
-        X, y = [], []
-        for tagged in tagged_sentences:
-            for index in range(len(tagged)):
-                items = self.features(self.untag(tagged), index)
-                if not isinstance(items, list):
-                    items = [items]
-                for item in items:
-                    X.append(item)
-                    y.append(tagged[index][-1])
-        return X, y
-
-    def crf_transform_to_dataset(self, tagged_sentences):
-        Xs, ys = [], []
-        for tagged in tagged_sentences:
-            X, y = [], []
-            for index in range(len(tagged)):
-                items = self.features(self.untag(tagged), index)
-                if not isinstance(items, list):
-                    items = [items]
-                for item in items:
-                    X.append(item)
-                    y.append(tagged[index][-1])
-            Xs.append(X)
-            ys.append(y)
-        return Xs, ys
 
     def classify_transform_to_dataset(self, dataset):
         X, y = [], []
@@ -185,99 +153,59 @@ class Trainer(object):
             test_set = self.dataset
 
         best_feature_func = self.features
-
         taggers = list()
 
-        if self.classifiers[0].__name__ == 'CRF':
-            from sklearn_crfsuite import metrics
-            # CRF algorithm
-            X_train, y_train = self.crf_transform_to_dataset(train_set)
-            X_test, y_test = self.crf_transform_to_dataset(test_set)
+        feature_func = self.features
+        best_feature_func = feature_func
 
-            if dumper:
-                self.dumper = dumper
-                dumper(X_train, self.__class__.__name__.lower() + 'X_train.txt')
-                dumper(X_test, self.__class__.__name__.lower() + 'X_test.txt')
+        for feature_extraction in self.feature_extractions:
 
-            print('Train_set %s' % len(X_train))
-            print('Test_set %s' % len(X_test))
-            # print(len(X_train), len(y_train))
+            # if feature_extraction[0] == 'count':
+            #     if isinstance(train_set[0][0], dict):
+            #         continue
+            #     self.features = self.features__
+            # else:
+            #     self.features = feature_func
 
-            clf = CRF()
-            clf.fit(X_train, y_train)
+            # train all classification models
+            X_train, y_train = self.classify_transform_to_dataset(train_set)
+            X_test, y_test = self.classify_transform_to_dataset(test_set)
+            for classifier in self.classifiers:
+                steps = list()
+                steps.append(feature_extraction)
+                if self.model.use_tfidf:
+                    steps.append(('tfidf', TfidfTransformer()))
+                steps.append(self.get_classifier(classifier))
+                clf = Pipeline(steps)
 
-            accuracy = clf.score(X_test, y_test)
-            max_accuracy = accuracy
+                try:
+                    clf.fit(X_train, y_train)
+                except Exception as e:
+                    print('ERROR', e)
+                    continue
 
-            #Print F1 score of each label
-            if self.is_overfitting ==True:
                 y_pred = clf.predict(X_test)
                 classes = list(clf.classes_)
-                labels = []
-                for label in classes:
-                    if label[:1]!='_':
-                        labels.append(label)
-                print(metrics.flat_classification_report(y_test, y_pred, labels = labels, digits = 3))
-            else:
+                # print(classes)
+                from sklearn import metrics
+                print(metrics.classification_report(y_test, y_pred,
+                                                    target_names=classes,digits=3))
                 accuracy = clf.score(X_test, y_test)
-                max_accuracy = accuracy
 
-        else:
-
-            feature_func = self.features
-            best_feature_func = feature_func
-
-            for feature_extraction in self.feature_extractions:
-
-                if feature_extraction[0] == 'count':
-                    if isinstance(train_set[0][0], dict):
-                        continue
-                    self.features = self.features__
-                else:
-                    self.features = feature_func
-
-                # train all classification models
-                X_train, y_train = self.classify_transform_to_dataset(train_set)
-                X_test, y_test = self.classify_transform_to_dataset(test_set)
-
-                for classifier in self.classifiers:
-
-                    steps = list()
-                    steps.append(feature_extraction)
-                    if self.model.use_tfidf:
-                        steps.append(('tfidf', TfidfTransformer()))
-                        # steps.append(('kbest', SelectKBest(k=100)))
-                    steps.append(self.get_classifier(classifier))
-
-                    clf = Pipeline(steps)
-                    try:
-                        clf.fit(X_train, y_train)
-                    except Exception as e:
-                        print('ERROR', e)
-                        continue
-
-                    y_pred = clf.predict(X_test)
-                    classes = list(clf.classes_)
-                    # print(classes)
-                    from sklearn import metrics
-                    print(metrics.classification_report(y_test, y_pred,
-                                                        target_names=classes,digits=3))
-                    accuracy = clf.score(X_test, y_test)
-
-                    # for y1,y2,x in zip(y_test,y_pred,X_test):
-                    #     if y1!=y2:
-                    #         print('Sentence: ',x)
-                    #         print('True label',y1)
-                    #         print('Predict label',y2)
+                # for y1,y2,x in zip(y_test,y_pred,X_test):
+                #     if y1!=y2:
+                #         print('Sentence: ',x)
+                #         print('True label',y1)
+                #         print('Predict label',y2)
 
 
-                    print('feature extraction %s, classifier %s, accuracy: %s' % \
-                          (feature_extraction[0], classifier.__name__, accuracy))
+                print('feature extraction %s, classifier %s, accuracy: %s' % \
+                      (feature_extraction[0], classifier.__name__, accuracy))
 
-                    if accuracy >= max_accuracy:
-                        max_accuracy = accuracy
-                        best_classifier = clf
-                        best_feature_func = self.features
+                if accuracy >= max_accuracy:
+                    max_accuracy = accuracy
+                    best_classifier = clf
+                    best_feature_func = self.features
 
         if not best_classifier:
             best_classifier = clf
@@ -289,7 +217,7 @@ class Trainer(object):
         classifier_name = best_classifier.__class__.__name__ if best_classifier.__class__.__name__ == 'CRF' \
             else best_classifier.steps[-1][1].__class__.__name__
 
-        print('Number of labels: %i' % len(best_classifier.classes_))
+        # print('Number of labels: %i' % len(best_classifier.classes_))
 
         print('Best model: feature extraction %s, classifier %s, accuracy: %s' % \
               (feature_extraction, classifier_name, max_accuracy))
@@ -315,10 +243,7 @@ class TrainClassifier(Trainer):
     def __init__(self, tokenizer=None):
 
         super(TrainClassifier, self).__init__(tokenizer=tokenizer)
-
         self.punct_regex = re.compile(self.model.punct_regex, re.UNICODE | re.MULTILINE | re.DOTALL)
-        # from sklearn.neural_network import MLPClassifier
-
         self.classifiers = [
             # RandomForestClassifier,
             MultinomialNB,
@@ -329,41 +254,6 @@ class TrainClassifier(Trainer):
             # AdaBoostClassifier,
             SGDClassifier,
             KNeighborsClassifier,
-            # MLPClassifier, # Multi-layer Perceptron Neural network
+            # MLPClassifier,
         ]
 
-        # Predict probabilities for Sklearn LinearSVC
-        # http://www.erogol.com/predict-probabilities-sklearn-linearsvc/
-
-    def features(self, document, index=0):
-
-        import string
-        import re
-
-        sent = document.lower()
-
-        # remove all punctuation
-        sent = ''.join(ch for ch in sent if ch not in string.punctuation)
-
-        # strip punctuation
-        sent = sent.strip(string.punctuation)
-
-        # remove multiple spaces
-        sent = re.sub(r' +', ' ', sent).strip()
-
-        # remove numbers
-        sent = ''.join([i for i in sent if not i.isdigit()])
-
-        feature_set = dict()
-
-        if self.tokenizer:
-            tokens = self.tokenizer.tokenize(sent)
-        else:
-            tokens = self.punct_regex.findall(sent)
-
-        for token in tokens:
-            if token not in feature_set:
-                feature_set[token] = 1
-            else:
-                feature_set[token] += 1
-        return feature_set

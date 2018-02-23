@@ -8,8 +8,10 @@ from sklearn.externals import joblib
 import csv
 from models.train import *
 from models.classifier import *
+from conect_db import get_train_data, get_answers
 
-class TrainClassifierTests(unittest.TestCase):
+class TrainClassifierTests():
+
     def load_data_set2(self):
         dataset = list()
         with open(os.path.join(PROJECT_PATH, 'data', 'intents.txt')) as f:
@@ -50,7 +52,6 @@ class TrainClassifierTests(unittest.TestCase):
 
         return dataset
 
-
     def load_intents_dictionary(self):
         dictionary = dict()
         with open(os.path.join(PROJECT_PATH, 'data', 'intents_dictionary.csv')) as f:
@@ -63,29 +64,27 @@ class TrainClassifierTests(unittest.TestCase):
 
         return dictionary
 
-
     def datasource(self):
 
-        dataset = self.load_data_set2()
+        dataset = get_train_data()  # self.load_data_set2()
         word_dictionary = self.load_intents_dictionary()
         return dataset, word_dictionary
 
-    def test_train_intent_classifier(self):
+    def train_intent_classifier(self):
 
         # with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
         #     model = joblib.load(f)
-        tokenizer = None#Tokenizer(model=model)
-
+        tokenizer = None  # Tokenizer(model=model)
         trainer = TrainClassifier(tokenizer=tokenizer)
         trainer.datasource = self.datasource
-        trainer.is_overfitting = False
-        trainer.model.use_tfidf = False
+        trainer.model.answers = get_answers()
+        # trainer.is_overfitting = False
         trainer.classifiers = [
             # RandomForestClassifier,
             # MultinomialNB,
-            # LinearSVC_proba,
+            LinearSVC_proba,
             # DecisionTreeClassifier,
-            LogisticRegression,
+            # LogisticRegression,
             # AdaBoostClassifier,
             # SGDClassifier,
             # KNeighborsClassifier,
@@ -93,24 +92,25 @@ class TrainClassifierTests(unittest.TestCase):
         ]
         # trainer.tokenizer.synonyms = self.load_synonyms()
 
-        trainer.train()
+        # trainer.train()
         trainer.is_overfitting = True
         model = trainer.train()
         with open(os.path.join(PROJECT_PATH, 'data/intents.model'), 'w') as f:
             joblib.dump(model, f)
 
-    def test_classifier_intents(self):
+    def test_me(self):
 
         documents = [
-            u'Xin chào',
+            u'xin chào nhé',
             u'em là ai thế nhỉ',
             u'sao kém thế nhỉ',
-            u'Cho hỏi chỗ mua thuốc',
+            u'Cho hỏi chỗ mua thuốc với bạn ơi',
             u'em ơi cho anh hỏi giá thuốc tràng phục linh thế nào nhỉ',
-            u'giỏi đấy',
+            u'ồ giỏi đấy',
             u'thuốc vương bảo dùng như thế nào ấy nhỉ',
-            u'cám ơn em nhé',
+            u'ồ chào nhé',
             u'tạm biệt cậu nhé',
+            u'tạm biet'
 
         ]
 
@@ -124,8 +124,20 @@ class TrainClassifierTests(unittest.TestCase):
         classifier = Classifier(model=model)
         for document in documents:
             labels = classifier.predict(document)
-            print(labels)
+            print(document, labels)
+
+    # def test_classify_intent(self, query, sessionId):
+    #     with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
+    #         model = joblib.load(f)
+    #     classifier = Classifier(model=model)
+    #     intent = classifier.predict(query)[0]
+    #     answers = classifier.anwers
+    #     print(classifier.predict_proba(query)[0])
+    #     # return [intent,'NOTHING']
+    #     for data in answers:
+    #         if intent == data[0]:
+    #             return [intent, data[1]]
 
 if __name__ == '__main__':
-    # unittest.main()
-    pass
+    A = TrainClassifierTests()
+    A.test_me()
