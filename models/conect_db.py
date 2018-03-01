@@ -28,4 +28,4 @@ def get_answers():
     return mydata
 
 # for dat in get_train_data():
-#     print dat[0],dat[1]
+#     print dat[0],dat[1]sdasds
