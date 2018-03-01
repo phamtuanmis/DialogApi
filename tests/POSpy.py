@@ -51,20 +51,20 @@ class TrainPosTaggerTests(unittest.TestCase):
 
         trainer = TrainPosTagger()
         trainer.datasource = self.datasource
-        trainer.train(test_size=0.5)
+        trainer.train(test_size=0.75)
 
         with open(os.path.join(PROJECT_PATH, 'pretrained_models/postagger.model'), 'w') as f:
             joblib.dump(trainer.model, f)
 
-        # trainer.visualize()
 
     def test_postagger(self):
 
         sentences = (
             u'nhà em có ở an bình tây minh hóa đâu, em ở mường khương bắc kạn mà các bác',
+            u'mua thuốc maxxhair ở thái thụy thái bình chỗ nào',
             u'cho tôi hỏi ở thị trấn thanh chương huyện thanh chương nghệ an thì mua tràng phục linh ở đâu',
             u'tôi ở mèo vạc có ở xuân thủy cầu giấy đâu nhỉ hà nội hay hà nam thì cũng thế thôi, ở xã minh quán huyện trấn yên yên bái là nhất',
-            u'hôm qua lang thang em bắt xe đi đô lương nghệ an nhưng thế nào lại lên nhầm xe phù ninh phú thọ cuối cùng em phải xuống xe ở vĩnh phúc'
+            u'hôm qua lang thang em bắt xe đi đô lương nghệ an nhưng thế nào lại lên nhầm xe phù ninh huyện Phú Thọ cuối cùng em phải xuống xe ở vĩnh phúc'
         )
 
         with open(os.path.join(PROJECT_PATH, 'pretrained_models/tokenizer.model')) as f:
@@ -76,11 +76,11 @@ class TrainPosTaggerTests(unittest.TestCase):
         tagger = PosTagger(model=model, tokenizer=tokenizer)
 
         for sentence in sentences:
-            print('.'*100)
+            print('-'*100)
             tokens = tagger.predict(sentence)
             for token, tag in tokens:
-                if tag!='0':
-                    print(token,'\t\t', tag)
+                # if tag!='0':
+                print(token,'\t\t', tag)
 
 
 if __name__ == '__main__':

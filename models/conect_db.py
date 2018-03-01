@@ -27,5 +27,17 @@ def get_answers():
     db.close()
     return mydata
 
+def get_entities():
+
+    import MySQLdb
+    db = MySQLdb.connect(host="127.0.0.1",
+                         user="root",
+                         passwd="",
+                         db="chatbot")
+    cur = db.cursor()
+    cur.execute("SELECT content, entity from entity_samples,entities where entity_samples.entity_id = entities.id")
+    mydata = [list(x) for x in cur.fetchall()]
+    db.close()
+    return mydata
 # for dat in get_train_data():
-#     print dat[0],dat[1]sdasds
+#     print dat[0],dat[1]

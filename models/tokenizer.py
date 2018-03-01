@@ -56,7 +56,6 @@ class Tokenizer(object):
         output = self.tagging(sent)
         tokens = list()
         grams = []
-
         for index in range(len(output)):
             if output[index][-1] == '0':
                 tokens.append(output[index][0])
