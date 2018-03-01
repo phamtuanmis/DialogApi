@@ -11,6 +11,8 @@ import requests
 from flask_cors import CORS, cross_origin
 import unittest
 import os
+import unittest
+
 from data import PROJECT_PATH
 from sklearn.externals import joblib
 import csv
@@ -20,7 +22,7 @@ from flask import Flask
 from conect_db import get_train_data,get_answers
 
 
-class TrainClassifierTests():
+class TrainClassifierTests(unittest.TestCase):
     def load_data_set2(self):
         dataset = list()
         with open(os.path.join(PROJECT_PATH, 'data', 'intents.txt')) as f:
@@ -147,6 +149,33 @@ class TrainClassifierTests():
         #         return [intent,data[1]]
         #     else:
         #         return ['default',u'Em chưa được dạy vấn đề này ạ']
+
+    def test_train_model(self):
+
+        # with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
+        #     model = joblib.load(f)
+        tokenizer = None  # Tokenizer(model=model)
+        trainer = TrainClassifier(tokenizer=tokenizer)
+        trainer.datasource = self.datasource
+        trainer.model.answers = get_answers()
+        trainer.classifiers = [
+            # RandomForestClassifier,
+            # MultinomialNB,
+            # LinearSVC_proba,
+            # DecisionTreeClassifier,
+            # LogisticRegression,
+            # AdaBoostClassifier,
+            # SGDClassifier,
+            # KNeighborsClassifier,
+            MLPClassifier,
+        ]
+        # trainer.tokenizer.synonyms = self.load_synonyms()
+        # trainer.is_overfitting = False
+        # trainer.train()
+        trainer.is_overfitting = True
+        model = trainer.train()
+        with open(os.path.join(PROJECT_PATH, 'data/intents.model'), 'w') as f:
+            joblib.dump(model, f)
 
 if __name__ == '__main__':
     pass

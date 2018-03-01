@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 # from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 
-# from sklearn_crfsuite import CRF
+from sklearn_crfsuite import CRF
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import MultinomialNB
@@ -33,6 +33,7 @@ class Trainer(object):
     '''
     Trainer
     '''
+
     def __init__(self, tokenizer=None, separator=' '):
 
         self.separator = separator
@@ -53,7 +54,7 @@ class Trainer(object):
                 ngram_range=(1, 2),
                 max_features=self.model.max_features,
                 tokenizer=self.tokenizer.tokenize if self.tokenizer else None,
-             )),
+            )),
             # ('dict', DictVectorizer(sparse=False)),
             # ('tfidf',TfidfVectorizer()),
         ]
@@ -73,7 +74,6 @@ class Trainer(object):
         self.taggers = None
         self.dumper = None
 
-
     def get_classifier(self, cls):
         cls_ = None
         for c in self.classifiers:
@@ -85,7 +85,7 @@ class Trainer(object):
                 elif cls.__name__ == 'RandomForestClassifier':
                     cls_ = RandomForestClassifier(n_estimators=300)
                 elif cls.__name__ == 'MLPClassifier':
-                    cls_ = MLPClassifier(hidden_layer_sizes=(100,100),)
+                    cls_ = MLPClassifier(hidden_layer_sizes=(100, 100), )
                 else:
                     cls_ = c()
         return ('classifier', cls_)
@@ -97,21 +97,96 @@ class Trainer(object):
         '''
         return list((), {})
 
+    # def features(self, sent, index=0):
+    #     word = sent[index]
+    #     # return sent # feature for INTENT model
+    #     return {
+    #         'word': word,
+    #     }
+
     def features(self, sent, index=0):
+        import string
         word = sent[index]
-        return sent
-        # return {
-        #     'word': word,
-        # }
+
+        features = {
+            'word': word,
+            # 'len':len(word),
+            # 'word_lowwer': word.lower(),
+            # 'word_upper': word.upper(),
+            # 'is_first': index == 0,
+            # 'is_last': index == len(sent) - 1,
+            # 'word[:1]': word[:1],
+            # 'word[:2]': word[:2],
+            # 'word[:3]': word[:3],
+            # 'word[:4]': word[:4],
+            # 'word[:5]': word[:5],
+            # 'word[:6]': word[:6],
+            # 'word[-6:]': word[-6:],
+            # 'word[-5:]': word[-5:],
+            # 'word[-4:]': word[-4:],
+            # 'word[-3:]': word[-3:],
+            # 'word[-2:]': word[-2:],
+            # 'word[-1:]': word[-1:],
+            # 'word.is_lower': word.islower(),
+            # 'word.is_upper': word.isupper(),
+            # 'word.is_title': word.istitle(),
+            # 'word.is_digit': word.isdigit(),
+            # 'is_all_caps': word.upper() == word,
+            # 'capitals_inside': word[1:].lower() != word[1:],
+            # 'prev_word': '' if index == 0 else sent[index - 1],
+            # 'prev_word2': ' ' if index == 0 or index == 1 else sent[index - 2],
+            # 'next_word': '' if index == len(sent) - 1 else sent[index + 1],
+            # 'next_word2': ' ' if index == len(sent) - 1 or index == len(sent) - 2 else sent[index + 2],
+            # 'is_punctuation': word in string.punctuation
+
+        }
+
+        n_grams = (4, 3, 2)
+        size_sent = len(sent)
+        for n_gram in n_grams:
+            tokens = list()
+            for i in range(index, index + n_gram):
+                if i < size_sent:
+                    tokens.append(sent[i])
+
+            word = ' '.join(tokens)
+            gram = self.model.word_dictionary.get(word.lower(), -1) + 1
+            feature_name = '%s-gram' % gram
+            features.update({
+                feature_name: gram > 0,
+                '%s.word[0]'% feature_name: word.split(' ')[0],
+                # '%s.word'% feature_name : word,
+                # '%s.word.is_lower' % feature_name: word.islower(),
+                # '%s.word.is_upper' % feature_name: word.isupper(),
+                # '%s.word.is_title' % feature_name: word.istitle(),
+                # '%s.word.is_digit' % feature_name: word.isdigit(),
+                # '%s.is_all_caps' % feature_name: word.upper() == word,
+                # '%s.capitals_inside': word[1:].lower() != word[1:],
+            })
+        return features
 
     def untag(self, tagged_sentence):
         return [w for w, t in tagged_sentence]
 
+    def crf_transform_to_dataset(self, tagged_sentences):
+        Xs, ys = [], []
+        for tagged in tagged_sentences:
+            X, y = [], []
+            for index in range(len(tagged)):
+                items = self.features(self.untag(tagged), index)
+                if not isinstance(items, list):
+                    items = [items]
+                for item in items:
+                    X.append(item)
+                    y.append(tagged[index][-1])
+            Xs.append(X)
+            ys.append(y)
+        return Xs, ys
 
     def classify_transform_to_dataset(self, dataset):
         X, y = [], []
         for document, topic in dataset:
-            items = self.features(document)
+            items = document
             if not isinstance(items, list):
                 items = [items]
             for item in items:
@@ -137,7 +212,6 @@ class Trainer(object):
 
         self.preprocessing()
 
-
         best_classifier = None
         max_accuracy = 0
         clf = None
@@ -147,7 +221,6 @@ class Trainer(object):
 
         train_set, test_set = train_test_split(self.dataset, test_size=test_size, random_state=10)
 
-
         if not train_set or self.is_overfitting:
             train_set = self.dataset
             test_set = self.dataset
@@ -155,61 +228,95 @@ class Trainer(object):
         best_feature_func = self.features
         taggers = list()
 
-        feature_func = self.features
-        best_feature_func = feature_func
+        if self.classifiers[0].__name__ == 'CRF':
+            from sklearn_crfsuite import metrics
+            # CRF algorithm
+            X_train, y_train = self.crf_transform_to_dataset(train_set)
+            X_test, y_test = self.crf_transform_to_dataset(test_set)
 
-        for feature_extraction in self.feature_extractions:
+            if dumper:
+                self.dumper = dumper
+                dumper(X_train, self.__class__.__name__.lower() + 'X_train.txt')
+                dumper(X_test, self.__class__.__name__.lower() + 'X_test.txt')
 
-            # if feature_extraction[0] == 'count':
-            #     if isinstance(train_set[0][0], dict):
-            #         continue
-            #     self.features = self.features__
-            # else:
-            #     self.features = feature_func
+            print('Train_set %s' % len(X_train))
+            print('Test_set %s' % len(X_test))
+            # print(len(X_train), len(y_train))
 
-            # train all classification models
-            X_train, y_train = self.classify_transform_to_dataset(train_set)
-            X_test, y_test = self.classify_transform_to_dataset(test_set)
-            for classifier in self.classifiers:
-                steps = list()
-                steps.append(feature_extraction)
-                if self.model.use_tfidf:
-                    steps.append(('tfidf', TfidfTransformer()))
-                steps.append(self.get_classifier(classifier))
-                clf = Pipeline(steps)
+            clf = CRF()
+            clf.fit(X_train, y_train)
 
-                try:
-                    clf.fit(X_train, y_train)
-                except Exception as e:
-                    print('ERROR', e)
-                    continue
+            accuracy = clf.score(X_test, y_test)
+            max_accuracy = accuracy
 
+            # Print F1 score of each label
+            if self.is_overfitting == True:
                 y_pred = clf.predict(X_test)
                 classes = list(clf.classes_)
-                # print(classes)
-                from sklearn import metrics
-                print(metrics.classification_report(y_test, y_pred,
-                                                    target_names=classes,digits=3))
+                labels = []
+                for label in classes:
+                    if label[:1] != '_':
+                        labels.append(label)
+                print(metrics.flat_classification_report(y_test, y_pred, labels=labels, digits=3))
+            else:
                 accuracy = clf.score(X_test, y_test)
+                max_accuracy = accuracy
 
-                # for y1,y2,x in zip(y_test,y_pred,X_test):
-                #     if y1!=y2:
-                #         print('Sentence: ',x)
-                #         print('True label',y1)
-                #         print('Predict label',y2)
+        else:
+
+            feature_func = self.features
+            best_feature_func = feature_func
+
+            for feature_extraction in self.feature_extractions:
+
+                # if feature_extraction[0] == 'count':
+                #     if isinstance(train_set[0][0], dict):
+                #         continue
+                #     self.features = self.features__
+                # else:
+                #     self.features = feature_func
+
+                # train all classification models
+                X_train, y_train = self.classify_transform_to_dataset(train_set)
+                X_test, y_test = self.classify_transform_to_dataset(test_set)
+                for classifier in self.classifiers:
+                    steps = list()
+                    steps.append(feature_extraction)
+                    if self.model.use_tfidf:
+                        steps.append(('tfidf', TfidfTransformer()))
+                    steps.append(self.get_classifier(classifier))
+                    clf = Pipeline(steps)
+
+                    try:
+                        clf.fit(X_train, y_train)
+                    except Exception as e:
+                        print('ERROR', e)
+                        continue
+
+                    y_pred = clf.predict(X_test)
+                    classes = list(clf.classes_)
+                    # print(classes)
+                    from sklearn import metrics
+                    print(metrics.classification_report(y_test, y_pred,
+                                                        target_names=classes, digits=3))
+                    accuracy = clf.score(X_test, y_test)
+
+                    # for y1,y2,x in zip(y_test,y_pred,X_test):
+                    #     if y1!=y2:
+                    #         print('Sentence: ',x)
+                    #         print('True label',y1)
+                    #         print('Predict label',y2)
 
 
-                print('feature extraction %s, classifier %s, accuracy: %s' % \
-                      (feature_extraction[0], classifier.__name__, accuracy))
+                    print('feature extraction %s, classifier %s, accuracy: %s' % \
+                          (feature_extraction[0], classifier.__name__, accuracy))
 
-                if accuracy >= max_accuracy:
-                    max_accuracy = accuracy
-                    best_classifier = clf
-                    best_feature_func = self.features
+                    if accuracy >= max_accuracy:
+                        max_accuracy = accuracy
+                        best_classifier = clf
 
         if not best_classifier:
             best_classifier = clf
-            best_feature_func = self.features
 
         feature_extraction = 'dict' if best_classifier.__class__.__name__ == 'CRF' \
             else best_classifier.steps[0][0]
@@ -224,9 +331,6 @@ class Trainer(object):
 
         self.model.pipeline = best_classifier
 
-        # func = textwrap.dedent(inspect.getsource(best_feature_func))
-        # self.model.features = func.replace('__(self,', '(self,')
-
         if feature_extraction == 'count':
             self.model.pipeline.steps[0][1].tokenizer = None
 
@@ -238,10 +342,120 @@ class Trainer(object):
         return self.model
 
 
-class TrainClassifier(Trainer):
-
+class TrainTokenizer(Trainer):
     def __init__(self, tokenizer=None):
+        super(TrainTokenizer, self).__init__()
+        self.tokenizer = tokenizer
+        self.classifiers = [
+            CRF
+        ]
 
+    def features(self, sent, index=0):
+        import string
+        word = sent[index]
+
+        features = {
+            'word': word,
+            'len':len(word),
+            'word_lowwer': word.lower(),
+            'word_upper': word.upper(),
+            'is_first': index == 0,
+            'is_last': index == len(sent) - 1,
+            # 'word[:1]': word[:1],
+            # 'word[:2]': word[:2],
+            # 'word[:3]': word[:3],
+            # 'word[:4]': word[:4],
+            # 'word[:5]': word[:5],
+            # 'word[:6]': word[:6],
+            # 'word[-6:]': word[-6:],
+            # 'word[-5:]': word[-5:],
+            # 'word[-4:]': word[-4:],
+            # 'word[-3:]': word[-3:],
+            # 'word[-2:]': word[-2:],
+            # 'word[-1:]': word[-1:],
+            'word.is_lower': word.islower(),
+            'word.is_upper': word.isupper(),
+            'word.is_title': word.istitle(),
+            'word.is_digit': word.isdigit(),
+            'is_all_caps': word.upper() == word,
+            'capitals_inside': word[1:].lower() != word[1:],
+            'prev_word': '' if index == 0 else sent[index - 1],
+            'prev_word2': ' ' if index == 0 or index == 1 else sent[index - 2],
+            'next_word': '' if index == len(sent) - 1 else sent[index + 1],
+            'next_word2': ' ' if index == len(sent) - 1 or index == len(sent) - 2 else sent[index + 2],
+            'is_punctuation': word in string.punctuation
+
+        }
+
+        n_grams = (4, 3, 2)
+        size_sent = len(sent)
+        for n_gram in n_grams:
+            tokens = list()
+            for i in range(index, index + n_gram):
+                if i < size_sent:
+                    tokens.append(sent[i])
+
+            word = ' '.join(tokens)
+            gram = self.model.word_dictionary.get(word.lower(), -1) + 1
+            feature_name = '%s-gram' % gram
+            features.update({
+                feature_name: gram > 0,
+                '%s.word[0]'% feature_name: word.split(' ')[0],
+                # '%s.word'% feature_name : word,
+                # '%s.word.is_lower' % feature_name: word.islower(),
+                # '%s.word.is_upper' % feature_name: word.isupper(),
+                # '%s.word.is_title' % feature_name: word.istitle(),
+                # '%s.word.is_digit' % feature_name: word.isdigit(),
+                # '%s.is_all_caps' % feature_name: word.upper() == word,
+                # '%s.capitals_inside': word[1:].lower() != word[1:],
+            })
+        return features
+
+class TrainPosTagger(Trainer):
+    def __init__(self, tokenizer=None):
+        super(TrainPosTagger, self).__init__(tokenizer=tokenizer)
+        self.classifiers = [
+            CRF
+        ]
+
+    def features(self, sent, index=0):
+
+        import string
+        word = sent[index]
+        return {
+            'word': word,
+            'is_first': index == 0,
+            'is_last': index == len(sent) - 1,
+            # 'is_capitalized': word[0].upper() == word[0],
+            # 'is_second_capitalized': word[1].upper() == word[1] if len(word) > 1 else False,
+            'word[:1]': word[:1],
+            'word[:2]': word[:2],
+            'word[:3]': word[:3],
+            'word[:4]': word[:4],
+            'word[:5]': word[:5],
+            'word[:6]': word[:6],
+            'word[:-6]': word[:-6],
+            'word[-5:]': word[-5:],
+            'word[-4:]': word[-4:],
+            'word[-3:]': word[-3:],
+            'word[-2:]': word[-2:],
+            'word[-1:]': word[-1:],
+            # 'word.is_lower': word.islower(),
+            # 'word.is_upper': word.isupper(),
+            'word.is_digit': word.isdigit(),
+            'has_hyphen': '-' in word,
+            'has_space': '_' in word,
+            'capitals_inside': word[1:].lower() != word[1:],
+            'capitals_': word[:1].upper() == word[:1],
+            # 'prev_word': '' if index == 0 else sent[index - 1],
+            # 'prev_word2': ' ' if index == 0 or index == 1 else sent[index - 2],
+            # 'next_word': '' if index == len(sent) - 1 else sent[index + 1],
+            # 'next_word2': ' ' if index == len(sent) - 1 or index == len(sent) - 2 else sent[index + 2],
+            'is_punctuation': word in string.punctuation
+        }
+
+class TrainClassifier(Trainer):
+    def __init__(self, tokenizer=None):
         super(TrainClassifier, self).__init__(tokenizer=tokenizer)
         self.punct_regex = re.compile(self.model.punct_regex, re.UNICODE | re.MULTILINE | re.DOTALL)
         self.classifiers = [

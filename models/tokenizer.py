@@ -21,24 +21,20 @@ class Tokenizer(object):
         self.is_strip_punctuation = False
 
         self.model = model
-
         self.predict_method = self.model.pipeline.predict_single \
-            if self.model.pipeline.__class__.__name__ == 'CRF' else \
-            self.model.pipeline.predict
+            if self.model.pipeline.__class__.__name__ == 'CRF' else self.model.pipeline.predict
 
         self.punct_regex = re.compile(self.model.punct_regex, re.UNICODE | re.MULTILINE | re.DOTALL)
         self.word_dictionary = self.model.word_dictionary
-        # exec(self.model.features, self.__dict__)
+        exec(self.model.features, self.__dict__)
 
     def tagging(self, sent):
         if not self.model.pipeline:
             raise Exception('Need load model first')
 
-        words = self.punct_regex.findall(sent)
-        tagged = self.predict_method(
-            [self.features(self, words, index) for index in range(len(words))])
-
-
+        # words = self.punct_regex.findall(sent)
+        words = sent.split()
+        tagged = self.predict_method([self.features(self, words, index) for index in range(len(words))])
         return zip(words, tagged)
 
     def tokenize(self, sent):
