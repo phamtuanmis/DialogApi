@@ -119,10 +119,11 @@ def test_train_postagger():
         joblib.dump(trainer.model, f)
 
 
-# data = test_train_postagger()
-# for i in data:
-#     print(i)
-datadb = get_entities()
-data2 = load_word_entity()
-for data in data2:
-    print(data.title())
+data = test_train_postagger()
+# # for i in data:
+# #     print(i)
+# datadb = get_entities()
+# data2 = load_word_entity()
+# for data in data2:
+#     print(data.title())
+# title
