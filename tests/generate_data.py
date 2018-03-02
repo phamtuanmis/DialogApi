@@ -69,6 +69,15 @@ def load_data_set():
             data.append([key, value])
         if value in ['province','product']:
             data.append([key, value])
+            data.append([key, value])
+            data.append([key, value])
+            data.append([key, value])
+        if value in ['product',]:
+            data.append([key, value])
+            data.append([key, value])
+            data.append([key, value])
+            data.append([key, value])
+
     shuffle(data)
     chunks = [data[x:x + randint(10, 20)] for x in xrange(0, len(data), 100)]
     return chunks
@@ -88,7 +97,7 @@ def load_data_set_fromdb():
     for content,entity in datadb:
         for key, value in result:
             if entity==key:
-                for i in range(len(dictionary)/(value*2)):
+                for i in range(2*len(dictionary)/(value)):
                     data.append([content,entity])
                     data.append([content.lower(), entity])
 
@@ -96,13 +105,40 @@ def load_data_set_fromdb():
         data.append([key,value])
     data = [x for pair in zip(data, data) for x in pair] #duplicate elements
     shuffle(data)
-    chunks = [data[x:x + randint(10, 25)] for x in xrange(0, len(data), 100)]
+    chunks = [data[x:x + randint(10, 20)] for x in xrange(0, len(data), 100)]
+    # result = collections.Counter(map(operator.itemgetter(1), data))
+    # print(result)
+    return chunks
+
+def load_data_set_fromdb2():
+    datadb = get_entities()
+    dictionary = load_word_dictionary()
+    for token in datadb:
+        if token[0].lower() in dictionary:
+            del dictionary[token[0].lower()]
+    import collections
+    import operator
+    result = collections.Counter(map(operator.itemgetter(1), datadb))
+    result = sorted(result.items(), key=operator.itemgetter(1))
+    data = []
+    for key, value in result:
+        for content,entity in datadb:
+            if entity==key:
+                for i in range(len(dictionary)/(value*2)):
+                    # data.append([content,entity])
+                    data.append([content.lower(), entity])
+
+    for key,value in dictionary.items():
+        data.append([key,value])
+    # data = [x for pair in zip(data, data) for x in pair] #duplicate elements
+    shuffle(data)
+    chunks = [data[x:x + randint(10, 20)] for x in xrange(0, len(data), 100)]
     # result = collections.Counter(map(operator.itemgetter(1), data))
     # print(result)
     return chunks
 
 def datasource():
-    dataset = load_data_set_fromdb()
+    dataset = load_data_set_fromdb2()
     # for data in dataset:
     #     for key,value in data:
     #         print(key,value)
@@ -120,10 +156,3 @@ def test_train_postagger():
 
 
 data = test_train_postagger()
-# # for i in data:
-# #     print(i)
-# datadb = get_entities()
-# data2 = load_word_entity()
-# for data in data2:
-#     print(data.title())
-# title

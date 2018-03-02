@@ -357,12 +357,12 @@ class TrainTokenizer(Trainer):
         features = {
             'word': word,
             'len':len(word),
-            'word_lowwer': word.lower(),
-            'word_upper': word.upper(),
+            # 'word_lower': word.lower(),
+            # 'word_upper': word.upper(),
             'is_first': index == 0,
             'is_last': index == len(sent) - 1,
-            # 'word[:1]': word[:1],
-            # 'word[:2]': word[:2],
+            'word[:1]': word[:1],
+            'word[:2]': word[:2],
             # 'word[:3]': word[:3],
             # 'word[:4]': word[:4],
             # 'word[:5]': word[:5],
@@ -371,14 +371,14 @@ class TrainTokenizer(Trainer):
             # 'word[-5:]': word[-5:],
             # 'word[-4:]': word[-4:],
             # 'word[-3:]': word[-3:],
-            # 'word[-2:]': word[-2:],
-            # 'word[-1:]': word[-1:],
-            'word.is_lower': word.islower(),
-            'word.is_upper': word.isupper(),
-            'word.is_title': word.istitle(),
+            'word[-2:]': word[-2:],
+            'word[-1:]': word[-1:],
+            # 'word.is_lower': word.islower(),
+            # 'word.is_upper': word.isupper(),
+            # 'word.is_title': word.istitle(),
             'word.is_digit': word.isdigit(),
-            'is_all_caps': word.upper() == word,
-            'capitals_inside': word[1:].lower() != word[1:],
+            # 'is_all_caps': word.upper() == word,
+            # 'capitals_inside': word[1:].lower() != word[1:],
             'prev_word': '' if index == 0 else sent[index - 1],
             'prev_word2': ' ' if index == 0 or index == 1 else sent[index - 2],
             'next_word': '' if index == len(sent) - 1 else sent[index + 1],
@@ -387,7 +387,7 @@ class TrainTokenizer(Trainer):
 
         }
 
-        n_grams = (4, 3, 2)
+        n_grams = (4, 3, 2,1)
         size_sent = len(sent)
         for n_gram in n_grams:
             tokens = list()
@@ -420,38 +420,43 @@ class TrainPosTagger(Trainer):
 
     def features(self, sent, index=0):
 
-        import string
+        # import string
         word = sent[index]
         return {
             'word': word,
             # 'is_first': index == 0,
             # 'is_last': index == len(sent) - 1,
-            'is_capitalized': word[0].upper() == word[0],
-            'is_second_capitalized': word[1].upper() == word[1] if len(word) > 1 else False,
+            # 'is_capitalized': word[0].upper() == word[0],
+            # 'is_second_capitalized': word[1].upper() == word[1] if len(word) > 1 else False,
             'word[:1]': word[:1],
             'word[:2]': word[:2],
             'word[:3]': word[:3],
             'word[:4]': word[:4],
             'word[:5]': word[:5],
             'word[:6]': word[:6],
+            'word[:7]': word[:7],
+            'word[:8]': word[:8],
+            'word[:-8]': word[:-8],
+            'word[:-7]': word[:-7],
             'word[:-6]': word[:-6],
             'word[-5:]': word[-5:],
             'word[-4:]': word[-4:],
             'word[-3:]': word[-3:],
             'word[-2:]': word[-2:],
             'word[-1:]': word[-1:],
-            'word.is_lower': word.islower(),
-            'word.is_upper': word.isupper(),
+            # 'word.is_lower': word.islower(),
+            # 'word.is_upper': word.isupper(),
             'word.is_digit': word.isdigit(),
+            'word.is_digit2': word.isdigit(),
             'has_hyphen': '-' in word,
-            'has_space': '_' in word,
-            'capitals_inside': word[1:].lower() != word[1:],
-            'capitals_': word[:1].upper() == word[:1],
+            'has_space': ' ' in word,
+            # 'capitals_inside': word[1:].lower() != word[1:],
+            # 'capitals_': word[:1].upper() == word[:1],
             # 'prev_word': '' if index == 0 else sent[index - 1],
             # 'prev_word2': ' ' if index == 0 or index == 1 else sent[index - 2],
             # 'next_word': '' if index == len(sent) - 1 else sent[index + 1],
             # 'next_word2': ' ' if index == len(sent) - 1 or index == len(sent) - 2 else sent[index + 2],
-            'is_punctuation': word in string.punctuation
+            # 'is_punctuation': word in string.punctuation
         }
 
 class TrainClassifier(Trainer):

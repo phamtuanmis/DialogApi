@@ -8,8 +8,11 @@ import os.path
 import sys
 import re
 import requests
+import os
+import codecs
+from models.tokenizer import Tokenizer,MyTokenizer
+from models.postagger import PosTagger
 from flask_cors import CORS, cross_origin
-import unittest
 import os
 from data import PROJECT_PATH
 from sklearn.externals import joblib
@@ -53,12 +56,16 @@ def processRequest(req):
     intent = result[0]
     intent_confident = result[1]
     response = result[2]
+    myclass = Entity_Classifier()
+    entities = myclass.postagger(query)
+
     response = {
         'resolvedQuery': query,
         'intentName':intent,
         'response': response,
         'sessionId':sessionId,
         'confidence': intent_confident,
+        'entities':entities,
 
     }
     return response
@@ -79,7 +86,7 @@ def processTrain(req):
     botId = req["botId"]
     myclass = TrainClassifierTests()
     myclass.trainmodel()
-    response = {'querry': 'DONE','BotID':botId }
+    response = {'querry': 'Train done!','BotID':botId }
     return response
 
 class TrainClassifierTests():
@@ -212,9 +219,81 @@ class TrainClassifierTests():
 
         return intent
 
+class Entity_Classifier():
+
+    def normalize_text(self, text):
+        dict = {
+            u'òa': u'oà', u'óa': u'oá', u'ỏa': u'oả', u'õa': u'oã', u'ọa': u'oạ', u'òe': u'oè',u'óe': u'oé',
+            u'ỏe': u'oẻ',u'õe': u'oẽ', u'ọe': u'oẹ', u'ùy': u'uỳ', u'úy': u'uý',u'ủy': u'uỷ', u'ũy': u'uỹ',u'ụy': u'uỵ'
+        }
+        for k, v in dict.iteritems():
+            text = text.replace(k, v)
+        return text
+
+    def load_word_dictionary(self):
+        word_dictionary = dict()
+        with codecs.open(os.path.join(PROJECT_PATH, 'data','lexicon.txt'), 'r', encoding='utf-8') as fin:
+            for token in fin.read().split('\n'):
+                token = self.normalize_text(token)
+                word = token.split(' ')
+                word_dictionary[token] = len(word)
+
+        return word_dictionary
+
+    def load_data_set(self):
+        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'train.txt'), 'r', encoding='utf-8') as f:
+            tagged_sentences = []
+            for sent in f.read().rsplit('\n'):
+                tagged_sentence = []
+                tokens = sent.split()
+                for token in tokens:
+                    pos = tuple(token.split("/"))
+                    pos = (u'/'.join(pos[:-1]), pos[-1])
+                    tagged_sentence.append(pos)
+                tagged_sentences.append(tagged_sentence)
+        return tagged_sentences
+
+    def datasource(self):
+        dataset = self.load_data_set()
+        word_dictionary = self.load_word_dictionary()
+
+        return dataset, word_dictionary
+
+    def test_train_postagger(self):
+
+        trainer = TrainPosTagger()
+        trainer.datasource = self.datasource
+        trainer.train()
+        trainer.is_overfitting = True
+        with open(os.path.join(PROJECT_PATH, 'pretrained_models/postagger.model'), 'w') as f:
+            joblib.dump(trainer.model, f)
+
+
+    def postagger(self,sent):
+        from models.conect_db import test_entity_data
+
+        tokenizer = MyTokenizer()
+
+        with open(os.path.join(PROJECT_PATH, 'pretrained_models/NER.model')) as f:
+            model = joblib.load(f)
+        tagger = PosTagger(model=model, tokenizer=tokenizer)
+
+        tokens = tagger.predict(sent.lower())
+        result = []
+        for token, tag in tokens:
+            if tag!='0':
+                result.append([token, tag])
+
+        return result
+
 if __name__ == '__main__':
     # port = int(os.getenv('PORT', 5000))
     # print("Starting app on port %d" % port)
     # app.run(debug=False, port=port,host = '0.0.0.0')
-    myclass = TrainClassifierTests()
-    myclass.trainmodel()
+    myclass = Entity_Classifier()
+    sent = {
+        "query": "Ở Xuân Trần Duy Hưng Cầu giấy Hà Nội thì mua thuốc Maxxhair chỗ nào",
+        "sessionId": "123456789"
+    }
+    processRequest(sent)
+    # print(myclass.postagger(sent))

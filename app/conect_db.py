@@ -1,25 +1,28 @@
+
 def get_train_data():
     import MySQLdb
+
     db = MySQLdb.connect(host="127.0.0.1",
                          user="root",
                          passwd="",
+                         charset='utf8',
+                         use_unicode=True,
                          db="chatbot")
-
     cur = db.cursor()
-
-    # Use all the SQL you like
     cur.execute("SELECT content,intent from samples, intents where samples.intent_id = intents.id")
     mydata = [list(x) for x in cur.fetchall()]
     db.close()
     return mydata
-# print(conectdb())
 
 
 def get_answers():
     import MySQLdb
+
     db = MySQLdb.connect(host="127.0.0.1",
                          user="root",
                          passwd="",
+                         charset='utf8',
+                         use_unicode=True,
                          db="chatbot")
     cur = db.cursor()
     cur.execute("SELECT intent, answer from intents,answers where answers.intent_id = intents.id")
@@ -27,11 +30,15 @@ def get_answers():
     db.close()
     return mydata
 
+
 def get_entities():
     import MySQLdb
+
     db = MySQLdb.connect(host="127.0.0.1",
                          user="root",
                          passwd="",
+                         charset='utf8',
+                         use_unicode=True,
                          db="chatbot")
     cur = db.cursor()
     cur.execute("SELECT content, entity from entity_samples,entities where entity_samples.entity_id = entities.id")
@@ -39,6 +46,18 @@ def get_entities():
     db.close()
     return mydata
 
-# mydata = get_entity()
-# for i,j in mydata:
-#     print i,j
+
+def test_entity_data():
+    import MySQLdb
+
+    db = MySQLdb.connect(host="127.0.0.1",
+                         user="root",
+                         passwd="",
+                         charset='utf8',
+                         use_unicode=True,
+                         db="chatbot")
+    cur = db.cursor()
+    cur.execute("SELECT content from samples where samples.intent_id = '7'")
+    mydata = [list(x) for x in cur.fetchall()]
+    db.close()
+    return mydata

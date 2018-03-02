@@ -17,7 +17,7 @@ class Tokenizer(object):
         self.synonyms = dict()
         self.stopwords = dict()
 
-        self.is_remove_punctuation = False
+        self.is_remove_punctuation = True
         self.is_strip_punctuation = False
 
         self.model = model
@@ -116,8 +116,7 @@ class SimpleTokenizer():
 
         text = self.clean(sent)
 
-        if self.is_lowercase:
-            text = text.lower()
+        text = text.lower()
 
         # remove all punctuation
         # text = ''.join(ch for ch in text if ch not in self.punctuation)
@@ -160,3 +159,52 @@ class SimpleTokenizer():
         tokens = [w for w in tokens if not w in self.stopwords]
 
         return tokens
+
+class MyTokenizer():
+
+    def tokenize(self,sent):
+        import os
+        from data import PROJECT_PATH
+        import codecs
+        from nltk.tokenize import regexp_tokenize
+        dict_list = []
+
+        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'commune.txt'), 'r', encoding='utf-8') as fin:
+            for token in fin.read().split('\n'):
+                dict_list.append(token.lower())
+
+        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'district.txt'), 'r', encoding='utf-8') as fin:
+            for token in fin.read().split('\n'):
+                dict_list.append(token.lower())
+
+        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'province.txt'), 'r', encoding='utf-8') as fin:
+            for token in fin.read().split('\n'):
+                dict_list.append(token.lower())
+
+        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'product.txt'), 'r', encoding='utf-8') as fin:
+            for token in fin.read().split('\n'):
+                dict_list.append(token.lower())
+        newdict = {}
+        for item in dict_list:
+            dk = item.replace(" ", "_")
+            newdict[item] = dk
+
+        newdict_sorted = sorted(newdict, key=len, reverse=True)
+
+        for item in newdict_sorted:
+            if item in sent:
+                sent = sent.replace(item, newdict[item])
+        res = regexp_tokenize(sent, pattern='\S+')
+        my_res = []
+        for token in res:
+            if '_' in token:
+                my_res.append(token.replace('_',' '))
+            else:
+                my_res.append(token)
+
+        return my_res
+
+# mytk = MyTokenizer()
+# x= mytk.tokenize(u'hôm qua lang thang em bắt xe đi đô lương nghệ an nhưng thế nào lại lên nhầm xe phù ninh huyện Phú Thọ cuối cùng em phải xuống xe ở vĩnh phúc')
+# for a in x:
+#     print(a)
