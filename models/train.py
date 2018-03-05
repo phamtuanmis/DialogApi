@@ -97,73 +97,6 @@ class Trainer(object):
         '''
         return list((), {})
 
-    # def features(self, sent, index=0):
-    #     word = sent[index]
-    #     # return sent # feature for INTENT model
-    #     return {
-    #         'word': word,
-    #     }
-
-    def features(self, sent, index=0):
-        import string
-        word = sent[index]
-
-        features = {
-            'word': word,
-            # 'len':len(word),
-            # 'word_lowwer': word.lower(),
-            # 'word_upper': word.upper(),
-            # 'is_first': index == 0,
-            # 'is_last': index == len(sent) - 1,
-            # 'word[:1]': word[:1],
-            # 'word[:2]': word[:2],
-            # 'word[:3]': word[:3],
-            # 'word[:4]': word[:4],
-            # 'word[:5]': word[:5],
-            # 'word[:6]': word[:6],
-            # 'word[-6:]': word[-6:],
-            # 'word[-5:]': word[-5:],
-            # 'word[-4:]': word[-4:],
-            # 'word[-3:]': word[-3:],
-            # 'word[-2:]': word[-2:],
-            # 'word[-1:]': word[-1:],
-            # 'word.is_lower': word.islower(),
-            # 'word.is_upper': word.isupper(),
-            # 'word.is_title': word.istitle(),
-            # 'word.is_digit': word.isdigit(),
-            # 'is_all_caps': word.upper() == word,
-            # 'capitals_inside': word[1:].lower() != word[1:],
-            # 'prev_word': '' if index == 0 else sent[index - 1],
-            # 'prev_word2': ' ' if index == 0 or index == 1 else sent[index - 2],
-            # 'next_word': '' if index == len(sent) - 1 else sent[index + 1],
-            # 'next_word2': ' ' if index == len(sent) - 1 or index == len(sent) - 2 else sent[index + 2],
-            # 'is_punctuation': word in string.punctuation
-
-        }
-
-        n_grams = (4, 3, 2)
-        size_sent = len(sent)
-        for n_gram in n_grams:
-            tokens = list()
-            for i in range(index, index + n_gram):
-                if i < size_sent:
-                    tokens.append(sent[i])
-
-            word = ' '.join(tokens)
-            gram = self.model.word_dictionary.get(word.lower(), -1) + 1
-            feature_name = '%s-gram' % gram
-            features.update({
-                feature_name: gram > 0,
-                '%s.word[0]'% feature_name: word.split(' ')[0],
-                # '%s.word'% feature_name : word,
-                # '%s.word.is_lower' % feature_name: word.islower(),
-                # '%s.word.is_upper' % feature_name: word.isupper(),
-                # '%s.word.is_title' % feature_name: word.istitle(),
-                # '%s.word.is_digit' % feature_name: word.isdigit(),
-                # '%s.is_all_caps' % feature_name: word.upper() == word,
-                # '%s.capitals_inside': word[1:].lower() != word[1:],
-            })
-        return features
 
     def untag(self, tagged_sentence):
         return [w for w, t in tagged_sentence]
@@ -194,10 +127,15 @@ class Trainer(object):
                 y.append(topic)
         return X, y
 
-    def features__(self, document, index=0):
-        return document, None
 
-    def preprocessing(self):
+    def preprocessing(self, text):
+        # dict = {
+        #     u'òa': u'oà', u'óa': u'oá', u'ỏa': u'oả', u'õa': u'oã', u'ọa': u'oạ', u'òe': u'oè', u'óe': u'oé',
+        #     u'ỏe': u'oẻ', u'õe': u'oẽ', u'ọe': u'oẹ', u'ùy': u'uỳ', u'úy': u'uý', u'ủy': u'uỷ', u'ũy': u'uỹ', u'ụy': u'uỵ'
+        # }
+        # for k, v in dict.iteritems():
+        #     text = text.replace(k, v)
+        # return text
         pass
 
     def train(self, test_size=0.25, dumper=None):
@@ -209,8 +147,6 @@ class Trainer(object):
             self.tokenizer.word_dictionary = word_dictionary
         self.model.word_dictionary = word_dictionary
         self.dataset = dataset
-
-        self.preprocessing()
 
         best_classifier = None
         max_accuracy = 0
@@ -225,12 +161,10 @@ class Trainer(object):
             train_set = self.dataset
             test_set = self.dataset
 
-        best_feature_func = self.features
         taggers = list()
 
         if self.classifiers[0].__name__ == 'CRF':
             from sklearn_crfsuite import metrics
-            # CRF algorithm
             X_train, y_train = self.crf_transform_to_dataset(train_set)
             X_test, y_test = self.crf_transform_to_dataset(test_set)
 
@@ -264,19 +198,8 @@ class Trainer(object):
 
         else:
 
-            feature_func = self.features
-            best_feature_func = feature_func
-
             for feature_extraction in self.feature_extractions:
 
-                # if feature_extraction[0] == 'count':
-                #     if isinstance(train_set[0][0], dict):
-                #         continue
-                #     self.features = self.features__
-                # else:
-                #     self.features = feature_func
-
-                # train all classification models
                 X_train, y_train = self.classify_transform_to_dataset(train_set)
                 X_test, y_test = self.classify_transform_to_dataset(test_set)
                 for classifier in self.classifiers:
@@ -324,7 +247,6 @@ class Trainer(object):
         classifier_name = best_classifier.__class__.__name__ if best_classifier.__class__.__name__ == 'CRF' \
             else best_classifier.steps[-1][1].__class__.__name__
 
-        # print('Number of labels: %i' % len(best_classifier.classes_))
 
         print('Best model: feature extraction %s, classifier %s, accuracy: %s' % \
               (feature_extraction, classifier_name, max_accuracy))
@@ -476,3 +398,6 @@ class TrainClassifier(Trainer):
             # MLPClassifier,
         ]
 
+    def features(self, sent):
+        self.preprocessing(sent)
+        return sent

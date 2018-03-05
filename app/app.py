@@ -289,9 +289,11 @@ class Entity_Classifier():
         return result
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
-    print("Starting app on port %d" % port)
-    app.run(debug=False, port=port,host = '0.0.0.0')
+    # port = int(os.getenv('PORT', 5000))
+    # print("Starting app on port %d" % port)
+    # app.run(debug=False, port=port,host = '0.0.0.0')
+    aclass = TrainClassifierTests()
+    aclass.test_classifier_intents()
     # # myclass = Entity_Classifier()
     # # sent = {
     # #     "query": "Ở Xuân Trần Duy Hưng Cầu giấy Hà Nội thì mua thuốc Maxxhair chỗ nào",
