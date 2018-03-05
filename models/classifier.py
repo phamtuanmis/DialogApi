@@ -20,7 +20,8 @@ class Classifier(object):
         if tokenizer and separator:
             self.tokenizer.separator = separator
 
-        self.predict_method = self.model.pipeline.predict#self.model.pipeline.predict_single \
+        self.predict_method = self.model.pipeline.predict
+        #self.model.pipeline.predict_single \
         #     if self.model.pipeline.__class__.__name__ == 'CRF' else \
         #     self.model.pipeline.predict_proba
 
@@ -35,4 +36,5 @@ class Classifier(object):
             raise Exception('Need load model first')
         labels = self.predict_method([self.features(self, document)])
         proba = self.model.pipeline.predict_proba([document])
-        return [labels[0], np.amax(proba[0][0])]
+        return labels
+        # return [labels[0], np.amax(proba[0][0])]

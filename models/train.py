@@ -387,7 +387,7 @@ class TrainTokenizer(Trainer):
 
         }
 
-        n_grams = (4, 3, 2,1)
+        n_grams = (4, 3, 2)
         size_sent = len(sent)
         for n_gram in n_grams:
             tokens = list()

@@ -63,10 +63,10 @@ class TrainPosTaggerTests(unittest.TestCase):
 
 
     def test_postagger(self):
-        from models.conect_db import test_entity_data
+        # from models.conect_db import test_entity_data
 
         sentences = (
-            u'nhà em có ở an bình tây minh hóa đâu, em ở mường khương bắc kạn mà các bác hồ chí minh',
+            u'nhà em có ở an bình tây minh hóa đâu, em ở mường khương bắc kạn mà các bác',
             u'mua thuốc maxxhair ở thái thụy thái bình chỗ nào',
             u'cho tôi hỏi ở xã thanh chương huyện thanh chương nghệ an thì mua tràng phục linh ở đâu',
             u'tôi ở mèo vạc có ở xuân thủy cầu giấy đâu nhỉ hà nội hay hà nam thì cũng thế thôi, ở xã minh quán huyện trấn yên yên bái là nhất',

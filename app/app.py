@@ -36,7 +36,7 @@ def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 @app.route('/conversation', methods=['POST'])
-# @cross_origin()
+@cross_origin()
 
 def conversation():
     req = request.get_json(silent=True, force=True)
@@ -45,6 +45,7 @@ def conversation():
     res = json.dumps(res, indent=4)
     r = make_response(res)
     r.headers['Content-Type'] = 'application/json'
+    print(r)
     return r
 
 def processRequest(req):
@@ -52,22 +53,23 @@ def processRequest(req):
     sessionId = req["sessionId"]
     myclass = TrainClassifierTests()
     result = myclass.classify_intent(query, sessionId)
-    # print(result)
-    intent = result[0]
-    intent_confident = result[1]
-    response = result[2]
-    myclass = Entity_Classifier()
-    entities = myclass.postagger(query)
-
-    response = {
-        'resolvedQuery': query,
-        'intentName':intent,
-        'response': response,
-        'sessionId':sessionId,
-        'confidence': intent_confident,
-        'entities':entities,
-
-    }
+    print(result)
+    # # print(result)
+    # intent = result[0]
+    # intent_confident = result[1]
+    # response = result[2]
+    # # myclass = Entity_Classifier()
+    # # entities = myclass.postagger(query)
+    # print(req)
+    # response = {
+    #     'resolvedQuery': query,
+    #     'intentName':intent,
+    #     'response': response,
+    #     'sessionId':sessionId,
+    #     'confidence': intent_confident,
+    #     # 'entities':entities,
+    #
+    # }
     return response
 
 
@@ -287,13 +289,18 @@ class Entity_Classifier():
         return result
 
 if __name__ == '__main__':
-    # port = int(os.getenv('PORT', 5000))
-    # print("Starting app on port %d" % port)
-    # app.run(debug=False, port=port,host = '0.0.0.0')
-    myclass = Entity_Classifier()
-    sent = {
-        "query": "Ở Xuân Trần Duy Hưng Cầu giấy Hà Nội thì mua thuốc Maxxhair chỗ nào",
-        "sessionId": "123456789"
-    }
-    processRequest(sent)
-    # print(myclass.postagger(sent))
+    port = int(os.getenv('PORT', 5000))
+    print("Starting app on port %d" % port)
+    app.run(debug=False, port=port,host = '0.0.0.0')
+    # # myclass = Entity_Classifier()
+    # # sent = {
+    # #     "query": "Ở Xuân Trần Duy Hưng Cầu giấy Hà Nội thì mua thuốc Maxxhair chỗ nào",
+    # #     "sessionId": "123456789"
+    # # }
+    # # processRequest(sent)
+    # # print(myclass.postagger(sent))
+    # query = u'Xin chào các bạn'
+    # sesionId = '123'
+    # myclass = TrainClassifierTests()
+    # result = myclass.classify_intent(query, sesionId)
+    # print(result)
