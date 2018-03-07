@@ -10,6 +10,15 @@ VN_CHARS_UPPER = u'ẠẢÃÀÁÂẬẦẤẨẪĂẮẰẶẲẴÓÒỌÕỎÔ�
 VN_CHARS = VN_CHARS_LOWER + VN_CHARS_UPPER
 
 
+def normalize_text(text):
+    dict = {
+        u'òa': u'oà', u'óa': u'oá', u'ỏa': u'oả', u'õa': u'oã', u'ọa': u'oạ', u'òe': u'oè', u'óe': u'oé',
+        u'ỏe': u'oẻ', u'õe': u'oẽ', u'ọe': u'oẹ', u'ùy': u'uỳ', u'úy': u'uý', u'ủy': u'uỷ', u'ũy': u'uỹ', u'ụy': u'uỵ'
+    }
+    for k, v in dict.iteritems():
+        text = text.replace(k, v)
+    return text
+
 def no_marks(s):
     __INTAB = [ch for ch in VN_CHARS]
     __OUTTAB = "a"*17 + "o"*17 + "e"*11 + "u"*11 + "i"*5 + "y"*5 + "d"*2

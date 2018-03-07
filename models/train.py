@@ -17,13 +17,13 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
-from tokenizer import SimpleTokenizer
+# from tokenizer import SimpleTokenizer
 from sklearn.neural_network import MLPClassifier
 import inspect
 import textwrap
 import re
 import time
-import math
+# import math
 from models import TrainModel
 
 from models import LinearSVC_proba
@@ -129,14 +129,14 @@ class Trainer(object):
 
 
     def preprocessing(self, text):
-        # dict = {
-        #     u'òa': u'oà', u'óa': u'oá', u'ỏa': u'oả', u'õa': u'oã', u'ọa': u'oạ', u'òe': u'oè', u'óe': u'oé',
-        #     u'ỏe': u'oẻ', u'õe': u'oẽ', u'ọe': u'oẹ', u'ùy': u'uỳ', u'úy': u'uý', u'ủy': u'uỷ', u'ũy': u'uỹ', u'ụy': u'uỵ'
-        # }
-        # for k, v in dict.iteritems():
-        #     text = text.replace(k, v)
-        # return text
-        pass
+        dict = {
+            u'òa': u'oà', u'óa': u'oá', u'ỏa': u'oả', u'õa': u'oã', u'ọa': u'oạ', u'òe': u'oè', u'óe': u'oé',
+            u'ỏe': u'oẻ', u'õe': u'oẽ', u'ọe': u'oẹ', u'ùy': u'uỳ', u'úy': u'uý', u'ủy': u'uỷ', u'ũy': u'uỹ', u'ụy': u'uỵ'
+        }
+        for k, v in dict.iteritems():
+            text = text.replace(k, v)
+        return text
+        # pass
 
     def train(self, test_size=0.25, dumper=None):
 
@@ -346,6 +346,9 @@ class TrainPosTagger(Trainer):
         word = sent[index]
         return {
             'word': word,
+            'len': len(word),
+            'len2': len(word),
+
             # 'is_first': index == 0,
             # 'is_last': index == len(sent) - 1,
             # 'is_capitalized': word[0].upper() == word[0],
@@ -369,7 +372,6 @@ class TrainPosTagger(Trainer):
             # 'word.is_lower': word.islower(),
             # 'word.is_upper': word.isupper(),
             'word.is_digit': word.isdigit(),
-            'word.is_digit2': word.isdigit(),
             'has_hyphen': '-' in word,
             'has_space': ' ' in word,
             # 'capitals_inside': word[1:].lower() != word[1:],
@@ -399,5 +401,5 @@ class TrainClassifier(Trainer):
         ]
 
     def features(self, sent):
-        # self.preprocessing(sent)
+        self.preprocessing(sent)
         return sent

@@ -3,7 +3,11 @@ from __future__ import print_function
 import re
 import string
 from models import PUNCT_REGEX
-
+from conect_db import get_entities,get_synonyms
+from nltk.tokenize import regexp_tokenize
+# import os
+# from data import PROJECT_PATH
+# import codecs
 
 class Tokenizer(object):
     '''
@@ -162,13 +166,22 @@ class SimpleTokenizer():
 
 class MyTokenizer():
 
-    def tokenize(self,sent):
-        import os
-        from data import PROJECT_PATH
-        import codecs
-        from nltk.tokenize import regexp_tokenize
-        dict_list = []
+    def __init__(self):
 
+        self.synonyms = dict()
+        self.stopwords = dict()
+        self.punctuation = string.punctuation
+        self.is_remove_punctuation = True
+        self.dictionary,self.newdict = self.get_dictionary()
+
+
+    def get_synonym_fromdb(self):
+        my_list = get_synonyms()
+        return dict([[x[1].lower(),x[0].lower()] for x in my_list])
+
+    def get_dictionary(self):
+        dict_list = []
+        self.synonyms = self.get_synonym_fromdb()
         # with codecs.open(os.path.join(PROJECT_PATH, 'data', 'commune.txt'), 'r', encoding='utf-8') as fin:
         #     for token in fin.read().split('\n'):
         #         dict_list.append(token.lower())
@@ -185,36 +198,59 @@ class MyTokenizer():
         #     for token in fin.read().split('\n'):
         #         dict_list.append(token.lower())
 
-        from conect_db import get_entities
-
         datadb = get_entities()
         for token in datadb:
-            print(token)
             dict_list.append(token[0].lower())
+
+        for k,v in self.synonyms.items():
+            dict_list.append(k.lower())
         newdict = {}
         for item in dict_list:
             dk = item.replace(" ", "_")
             newdict[item] = dk
 
         newdict_sorted = sorted(newdict, key=len, reverse=True)
-        # for i in newdict_sorted:
-        #     print(i)
-        for item in newdict_sorted:
-            if item in sent:
-                sent = sent.replace(item, newdict[item])
-                # print(sent)
+        return newdict_sorted, newdict
+
+    def tokenize(self,sent):
+        self.punctuation = self.punctuation.replace('-','')
+        if self.is_remove_punctuation:
+            sent = ''.join(ch for ch in sent if ch not in self.punctuation)
+        sent = (' '+sent+' ').lower()
+        for item in self.newdict:
+            if ' '+item +' 'in sent:
+                sent = sent.replace(item, self.newdict[item])
         res = regexp_tokenize(sent, pattern='\S+')
-        # print(res)
         my_res = []
         for token in res:
             if '_' in token:
-                my_res.append(token.replace('_',' '))
-            else:
+                token = token.replace('_',' ')
+                if token in self.synonyms:
+                    token = self.synonyms.get(token)
                 my_res.append(token)
-
+            else:
+                if token in self.synonyms:
+                    token = self.synonyms.get(token)
+                my_res.append(token)
         return my_res
 
 # mytk = MyTokenizer()
-# x= mytk.tokenize(u'tôi đang ở minh quán trấn yên yên bái ở trung quốc cho hỏi điểm bán thuốc tràng phục linh')
+# dictionary = dict()
+# tokenizer = SimpleTokenizer(separator=' ')
+# dict,_ = mytk.get_dictionary()
+# for value in dict:
+#     dictionary[value] = len(value)
+#
+# tokenizer.word_dictionary = dictionary
+# tokenizer.is_lowercase = False
+# print(dictionary)
+#
+#
+# mytk = MyTokenizer()
+# from extras import normalize_text
+# sent = u'Ở Xuân Thủy Cầu giấy thủ-đô, thì mua thuốc vĩnh phúc phú thọ ở mắc he chỗ nào'
+# sent = normalize_text(sent)
+# print(string.punctuation)
+# x= mytk.tokenize(sent)
 # for a in x:
 #     print(a)
