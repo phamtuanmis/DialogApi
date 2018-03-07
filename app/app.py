@@ -21,11 +21,12 @@ from models.train import *
 from models.classifier import *
 from flask import Flask
 from conect_db import get_train_data,get_answers
-
+from train_entities import train_entity
 install_aliases()
 app = Flask(__name__)
 cors = CORS(app)
 
+threshold_confidence = 0.5
 
 @app.errorhandler(400)
 def not_found(error):
@@ -36,7 +37,7 @@ def not_found(error):
     return make_response(jsonify({'error': 'Not found'}), 404)
 
 @app.route('/conversation', methods=['POST'])
-@cross_origin()
+# @cross_origin()
 
 def conversation():
     req = request.get_json(silent=True, force=True)
@@ -45,31 +46,27 @@ def conversation():
     res = json.dumps(res, indent=4)
     r = make_response(res)
     r.headers['Content-Type'] = 'application/json'
-    print(r)
     return r
 
 def processRequest(req):
     query = req["query"]
     sessionId = req["sessionId"]
     myclass = TrainClassifierTests()
-    result = myclass.classify_intent(query, sessionId)
-    print(result)
-    # # print(result)
-    # intent = result[0]
-    # intent_confident = result[1]
-    # response = result[2]
-    # # myclass = Entity_Classifier()
-    # # entities = myclass.postagger(query)
-    # print(req)
-    # response = {
-    #     'resolvedQuery': query,
-    #     'intentName':intent,
-    #     'response': response,
-    #     'sessionId':sessionId,
-    #     'confidence': intent_confident,
-    #     # 'entities':entities,
-    #
-    # }
+    result = myclass.classify_intent(query,threshold_confidence=threshold_confidence)
+    intent = result[0]
+    intent_confident = result[1]
+    response = result[2]
+    myclass = Entity_Classifier()
+    entities = myclass.postagger(query)
+    response = {
+        'resolvedQuery': query,
+        'intentName':intent,
+        'response': response,
+        'sessionId':sessionId,
+        'confidence': intent_confident,
+        'entities':entities,
+
+    }
     return response
 
 
@@ -88,6 +85,7 @@ def processTrain(req):
     botId = req["botId"]
     myclass = TrainClassifierTests()
     myclass.trainmodel()
+    train_entity()
     response = {'querry': 'Train done!','BotID':botId }
     return response
 
@@ -204,22 +202,21 @@ class TrainClassifierTests():
             labels = classifier.predict(document)
             print(labels)
 
-    def classify_intent(self,query, sessionId):
+    def classify_intent(self,query,threshold_confidence = 0.5):
         with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
             model = joblib.load(f)
         classifier = Classifier(model=model)
-        intent = classifier.predict(query)
+        intent_result = classifier.predict(query)
         answers = classifier.anwers
-        # print(classifier.predict(query)[0])
-        if intent[1] >= 0.5:
+        if intent_result[1] >= threshold_confidence:
             for data in answers:
-                if intent[0] == data[0]:
-                    intent.append(data[1])
+                if intent_result[0] == data[0]:
+                    intent_result.append(data[1])
         else:
-            intent[0]='not_define'
-            intent.append(u'Chatbot chưa được học vấn đề này')
+            intent_result[0]='not_define'
+            intent_result.append(u'Chatbot chưa được học vấn đề này')
 
-        return intent
+        return intent_result
 
 class Entity_Classifier():
 
@@ -272,7 +269,12 @@ class Entity_Classifier():
 
 
     def postagger(self,sent):
-        from models.conect_db import test_entity_data
+        # from models.conect_db import test_entity_data
+
+
+        # with open(os.path.join(PROJECT_PATH, 'pretrained_models/tokenizer.model')) as f:
+        #     model = joblib.load(f)
+        # tokenizer = Tokenizer(model = model)
 
         tokenizer = MyTokenizer()
 
@@ -285,22 +287,23 @@ class Entity_Classifier():
         for token, tag in tokens:
             if tag!='0':
                 result.append([token, tag])
+        # print(tokens)
 
         return result
 
 if __name__ == '__main__':
-    # port = int(os.getenv('PORT', 5000))
-    # print("Starting app on port %d" % port)
-    # app.run(debug=False, port=port,host = '0.0.0.0')
-    aclass = TrainClassifierTests()
-    aclass.test_classifier_intents()
-    # # myclass = Entity_Classifier()
-    # # sent = {
-    # #     "query": "Ở Xuân Trần Duy Hưng Cầu giấy Hà Nội thì mua thuốc Maxxhair chỗ nào",
-    # #     "sessionId": "123456789"
-    # # }
-    # # processRequest(sent)
-    # # print(myclass.postagger(sent))
+    port = int(os.getenv('PORT', 5005))
+    print("Starting app on port %d" % port)
+    app.run(debug=False, port=port,host = '0.0.0.0')
+    # aclass = TrainClassifierTests()
+    # aclass.test_classifier_intents()
+    # myclass = Entity_Classifier()
+    # sent = {
+    #     "query": "Ở Xuân Trần Duy Hưng Cầu giấy Hà Nội thì mua thuốc Maxxhair chỗ nào",
+    #     "sessionId": "123456789"
+    # }
+    # print(processRequest(sent))
+    # print(myclass.postagger(sent))
     # query = u'Xin chào các bạn'
     # sesionId = '123'
     # myclass = TrainClassifierTests()

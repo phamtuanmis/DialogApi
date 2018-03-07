@@ -387,17 +387,17 @@ class TrainClassifier(Trainer):
         self.punct_regex = re.compile(self.model.punct_regex, re.UNICODE | re.MULTILINE | re.DOTALL)
         self.classifiers = [
             # RandomForestClassifier,
-            MultinomialNB,
-            LinearSVC_proba,
-            # RidgeClassifier,
-            # DecisionTreeClassifier,
-            LogisticRegression,
-            # AdaBoostClassifier,
-            SGDClassifier,
-            KNeighborsClassifier,
-            # MLPClassifier,
+            # MultinomialNB,
+            # LinearSVC_proba,
+            # # RidgeClassifier,
+            # # DecisionTreeClassifier,
+            # LogisticRegression,
+            # # AdaBoostClassifier,
+            # SGDClassifier,
+            # KNeighborsClassifier,
+            MLPClassifier,
         ]
 
     def features(self, sent):
-        self.preprocessing(sent)
+        # self.preprocessing(sent)
         return sent

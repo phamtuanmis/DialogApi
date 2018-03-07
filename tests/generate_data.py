@@ -124,13 +124,13 @@ def load_data_set_fromdb2():
     for key, value in result:
         for content,entity in datadb:
             if entity==key:
-                for i in range(len(dictionary)/(value*2)):
+                for i in range(len(dictionary)/(value)):
                     # data.append([content,entity])
                     data.append([content.lower(), entity])
 
     for key,value in dictionary.items():
         data.append([key,value])
-    # data = [x for pair in zip(data, data) for x in pair] #duplicate elements
+    data = [x for pair in zip(data, data) for x in pair] #duplicate elements
     shuffle(data)
     chunks = [data[x:x + randint(10, 20)] for x in xrange(0, len(data), 100)]
     # result = collections.Counter(map(operator.itemgetter(1), data))
@@ -155,4 +155,4 @@ def test_train_postagger():
         joblib.dump(trainer.model, f)
 
 
-data = test_train_postagger()
+# data = test_train_postagger()

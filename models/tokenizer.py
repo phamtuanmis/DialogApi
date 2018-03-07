@@ -169,32 +169,42 @@ class MyTokenizer():
         from nltk.tokenize import regexp_tokenize
         dict_list = []
 
-        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'commune.txt'), 'r', encoding='utf-8') as fin:
-            for token in fin.read().split('\n'):
-                dict_list.append(token.lower())
+        # with codecs.open(os.path.join(PROJECT_PATH, 'data', 'commune.txt'), 'r', encoding='utf-8') as fin:
+        #     for token in fin.read().split('\n'):
+        #         dict_list.append(token.lower())
+        #
+        # with codecs.open(os.path.join(PROJECT_PATH, 'data', 'district.txt'), 'r', encoding='utf-8') as fin:
+        #     for token in fin.read().split('\n'):
+        #         dict_list.append(token.lower())
+        #
+        # with codecs.open(os.path.join(PROJECT_PATH, 'data', 'province.txt'), 'r', encoding='utf-8') as fin:
+        #     for token in fin.read().split('\n'):
+        #         dict_list.append(token.lower())
+        #
+        # with codecs.open(os.path.join(PROJECT_PATH, 'data', 'product.txt'), 'r', encoding='utf-8') as fin:
+        #     for token in fin.read().split('\n'):
+        #         dict_list.append(token.lower())
 
-        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'district.txt'), 'r', encoding='utf-8') as fin:
-            for token in fin.read().split('\n'):
-                dict_list.append(token.lower())
+        from conect_db import get_entities
 
-        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'province.txt'), 'r', encoding='utf-8') as fin:
-            for token in fin.read().split('\n'):
-                dict_list.append(token.lower())
-
-        with codecs.open(os.path.join(PROJECT_PATH, 'data', 'product.txt'), 'r', encoding='utf-8') as fin:
-            for token in fin.read().split('\n'):
-                dict_list.append(token.lower())
+        datadb = get_entities()
+        for token in datadb:
+            print(token)
+            dict_list.append(token[0].lower())
         newdict = {}
         for item in dict_list:
             dk = item.replace(" ", "_")
             newdict[item] = dk
 
         newdict_sorted = sorted(newdict, key=len, reverse=True)
-
+        # for i in newdict_sorted:
+        #     print(i)
         for item in newdict_sorted:
             if item in sent:
                 sent = sent.replace(item, newdict[item])
+                # print(sent)
         res = regexp_tokenize(sent, pattern='\S+')
+        # print(res)
         my_res = []
         for token in res:
             if '_' in token:
@@ -205,6 +215,6 @@ class MyTokenizer():
         return my_res
 
 # mytk = MyTokenizer()
-# x= mytk.tokenize(u'hôm qua lang thang em bắt xe đi đô lương nghệ an nhưng thế nào lại lên nhầm xe phù ninh huyện Phú Thọ cuối cùng em phải xuống xe ở vĩnh phúc')
+# x= mytk.tokenize(u'tôi đang ở minh quán trấn yên yên bái ở trung quốc cho hỏi điểm bán thuốc tràng phục linh')
 # for a in x:
 #     print(a)
