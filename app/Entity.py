@@ -13,6 +13,9 @@ from models.train import *
 from models.conect_db import get_entities
 from random import shuffle
 from models.extras import normalize_text
+import collections
+import operator
+
 
 class EntityClassifier():
 
@@ -29,16 +32,15 @@ class EntityClassifier():
         datadb = get_entities()
         dictionary = self.load_word_dictionary()
         for token in datadb:
-            if token[0].lower() in dictionary:
-                del dictionary[token[0].lower()]
-        import collections
-        import operator
+            token_lower = token[0].lower()
+            if token_lower in dictionary:
+                del dictionary[token_lower]
         result = collections.Counter(map(operator.itemgetter(1), datadb))
-        result = sorted(result.items(), key=operator.itemgetter(1))
+        result = sorted(result.items(), key = operator.itemgetter(1))
         data = []
         for key, value in result:
             for content, entity in datadb:
-                content = normalize_text(content)
+                # content = normalize_text(content)
                 if entity == key:
                     for i in range(len(dictionary) / (value)):
                         # data.append([content,entity])
@@ -47,11 +49,11 @@ class EntityClassifier():
         for key, value in dictionary.items():
             data.append([key, value])
         # data = [x for pair in zip(data, data) for x in pair]  # duplicate elements
-        shuffle(data)
-        #order dictionary by len of words
-        chunks = [data[x:x + randint(10, 20)] for x in xrange(0, len(data), 100)]
+        shuffle(data)#
+        # order dictionary by len of words
+        dataset = [data[x:x + randint(15, 25)] for x in xrange(0, len(data), 100)]
         # result = collections.Counter(map(operator.itemgetter(1), data))
-        return chunks
+        return dataset
 
     def datasource(self):
         dataset = self.load_data_set_fromdb()
@@ -67,6 +69,7 @@ class EntityClassifier():
             joblib.dump(trainer.model, f)
 
     def predict_entiy(self,sent):
+
         # with open(os.path.join(PROJECT_PATH, 'pretrained_models/tokenizer.model')) as f:
         #     model = joblib.load(f)
         # tokenizer = Tokenizer(model = model)
@@ -91,7 +94,8 @@ class EntityClassifier():
             u'thành phố nông cống thanh hoá là ở đây',
             u'cho em đi maxxhair nhé',
             u'ngoài kia là vĩnh tường vĩnh phú phải không',
-            u'có tràng phục linh với vương bảo không các bạn'
+            u'có tràng phục linh với vương bảo không các bạn',
+            u'tôi đang ở minh quán trấn yên yên bái cho hỏi điểm bán thuốc tràng phục linh'
         ]
         for sent in sents:
             entities = self.predict_entiy(sent)
@@ -100,5 +104,3 @@ class EntityClassifier():
                 print(entity)
 
 # EntityClassifier().train_entity_model()
-# a = 'abc def'
-# print(a[a.index('abc'):len('abc')])

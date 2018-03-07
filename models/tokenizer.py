@@ -172,8 +172,7 @@ class MyTokenizer():
         self.stopwords = dict()
         self.punctuation = string.punctuation
         self.is_remove_punctuation = True
-        self.dictionary,self.newdict = self.get_dictionary()
-
+        self.dictionary, self.newdict = self.get_dictionary()
 
     def get_synonym_fromdb(self):
         my_list = get_synonyms()
@@ -217,9 +216,10 @@ class MyTokenizer():
         if self.is_remove_punctuation:
             sent = ''.join(ch for ch in sent if ch not in self.punctuation)
         sent = (' '+sent+' ').lower()
-        for item in self.newdict:
-            if ' '+item +' 'in sent:
+        for item in self.dictionary:
+            if ' ' + item + ' 'in sent:
                 sent = sent.replace(item, self.newdict[item])
+
         res = regexp_tokenize(sent, pattern='\S+')
         my_res = []
         for token in res:
@@ -248,7 +248,7 @@ class MyTokenizer():
 #
 # mytk = MyTokenizer()
 # from extras import normalize_text
-# sent = u'Ở Xuân Thủy Cầu giấy thủ-đô, thì mua thuốc vĩnh phúc phú thọ ở mắc he chỗ nào'
+# sent = u'Ở Xuân Thủy Cầu giấy thủ-đô, thì mua thuốc vĩnh phúc phú thọ ở tràng phục linh chỗ nào'
 # sent = normalize_text(sent)
 # print(string.punctuation)
 # x= mytk.tokenize(sent)

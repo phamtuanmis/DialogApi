@@ -13,41 +13,40 @@ from models.tokenizer import MyTokenizer
 
 class IntentClassifier():
 
-    def load_data_set_from_csv(self):
-        dataset = list()
-        with open(os.path.join(PROJECT_PATH, 'data', 'intents.csv')) as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                sample = row['sample'].strip().lower().decode('utf-8')
-                intent_name = row['intent_name'].strip()
-                dataset.append((sample, intent_name))
-        return dataset
+    # def load_data_set_from_csv(self):
+    #     dataset = list()
+    #     with open(os.path.join(PROJECT_PATH, 'data', 'intents.csv')) as f:
+    #         reader = csv.DictReader(f)
+    #         for row in reader:
+    #             sample = row['sample'].strip().lower().decode('utf-8')
+    #             intent_name = row['intent_name'].strip()
+    #             dataset.append((sample, intent_name))
+    #     return dataset
+    #
+    # def load_synonyms(self):
+    #     dataset = dict()
+    #     with open(os.path.join(PROJECT_PATH, 'data', 'synonyms.txt')) as f:
+    #         lines = f.readlines()
+    #         for line in lines:
+    #             tokens = line.split(',')
+    #             for token in tokens[1:]:
+    #                 dataset[token.strip().decode('utf-8')] = tokens[0].strip().decode('utf-8')
+    #     return dataset
 
-    def load_synonyms(self):
-        dataset = dict()
-        with open(os.path.join(PROJECT_PATH, 'data', 'synonyms.txt')) as f:
-            lines = f.readlines()
-            for line in lines:
-                tokens = line.split(',')
-                for token in tokens[1:]:
-                    dataset[token.strip().decode('utf-8')] = tokens[0].strip().decode('utf-8')
-        return dataset
-
-    def load_intents_dictionary(self):
-        dictionary = dict()
-        with open(os.path.join(PROJECT_PATH, 'data', 'intents_dictionary.csv')) as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                key = row['key'].strip().decode('utf-8')
-                value = row['value'].strip().decode('utf-8')
-                dictionary[key] = value
-                dictionary[key.lower()] = value
-
-        return dictionary
+    # def load_intents_dictionary(self):
+    #     dictionary = dict()
+    #     with open(os.path.join(PROJECT_PATH, 'data', 'intents_dictionary.csv')) as f:
+    #         reader = csv.DictReader(f)
+    #         for row in reader:
+    #             key = row['key'].strip().decode('utf-8')
+    #             value = row['value'].strip().decode('utf-8')
+    #             dictionary[key] = value
+    #             dictionary[key.lower()] = value
+    #     return dictionary
 
     def datasource(self):
         dataset = get_train_data()#self.load_data_set()
-        word_dictionary = self.load_intents_dictionary()
+        word_dictionary = dict()#self.load_intents_dictionary()
         return dataset, word_dictionary
 
     def trainmodel(self):
@@ -111,7 +110,7 @@ class IntentClassifier():
         classifier = Classifier(model=model)
         for document in documents:
             labels = classifier.predict(document)
-            # print(labels)
+            print(labels)
 
 
 

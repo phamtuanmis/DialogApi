@@ -341,14 +341,10 @@ class TrainPosTagger(Trainer):
         ]
 
     def features(self, sent, index=0):
-
-        # import string
         word = sent[index]
         return {
             'word': word,
             'len': len(word),
-            'len2': len(word),
-
             # 'is_first': index == 0,
             # 'is_last': index == len(sent) - 1,
             # 'is_capitalized': word[0].upper() == word[0],
@@ -361,6 +357,16 @@ class TrainPosTagger(Trainer):
             'word[:6]': word[:6],
             'word[:7]': word[:7],
             'word[:8]': word[:8],
+            'word[:9]': word[:9],
+            'word[:10]': word[:10],
+            'word[:11]': word[:11],
+            'word[:12]': word[:12],
+            'word[:13]': word[:13],
+            'word[:-13]': word[:-13],
+            'word[:-12]': word[:-12],
+            'word[:-11]': word[:-11],
+            'word[:-10]': word[:-10],
+            'word[:-9]': word[:-9],
             'word[:-8]': word[:-8],
             'word[:-7]': word[:-7],
             'word[:-6]': word[:-6],
