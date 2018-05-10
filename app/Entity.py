@@ -87,20 +87,20 @@ class EntityClassifier():
                 result.append([token, tag])
         return result
 
-    def test_entiy(self):
-        sents = [
-            u' Long Xuyên xuân thuỷ cầu giấy hà nội thì mua thuốc tràng phục linh chỗ nào',
-            u'tôi ở việt nam trung quốc quốc thì mua thuốc ở đâu',
-            u'thành phố nông cống thanh hoá là ở đây',
-            u'cho em đi maxxhair nhé',
-            u'ngoài kia là vĩnh tường vĩnh phú phải không',
-            u'có tràng phục linh với vương bảo không các bạn',
-            u'tôi đang ở minh quán trấn yên yên bái cho hỏi điểm bán thuốc tràng phục linh'
-        ]
-        for sent in sents:
-            entities = self.predict_entiy(sent)
-            print('-'*100)
-            for entity,ent in entities:
-                print(entity)
+    # def test_entiy(self):
+    #     sents = [
+    #         u' Long Xuyên xuân thuỷ cầu giấy hà nội thì mua thuốc tràng phục linh chỗ nào',
+    #         u'tôi ở việt nam trung quốc quốc thì mua thuốc ở đâu',
+    #         u'thành phố nông cống thanh hoá là ở đây',
+    #         u'cho em đi maxxhair nhé',
+    #         u'ngoài kia là vĩnh tường vĩnh phú phải không',
+    #         u'có tràng phục linh với vương bảo không các bạn',
+    #         u'tôi đang ở minh quán trấn yên yên bái cho hỏi điểm bán thuốc tràng phục linh'
+    #     ]
+    #     for sent in sents:
+    #         entities = self.predict_entiy(sent)
+    #         print('-'*100)
+    #         for entity,ent in entities:
+    #             print(entity)
 
 # EntityClassifier().train_entity_model()

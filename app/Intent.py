@@ -67,11 +67,11 @@ class IntentClassifier():
         # trainer.train()
         trainer.is_overfitting = True
         model = trainer.train()
-        with open(os.path.join(PROJECT_PATH, 'data/intents.model'), 'w') as f:
+        with open(os.path.join(PROJECT_PATH, 'pretrained_models/intents.model'), 'w') as f:
             joblib.dump(model, f)
 
     def classify_intent(self, query, threshold_confidence=0.5):
-        with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
+        with open(os.path.join(PROJECT_PATH, 'pretrained_models/intents.model')) as f:
             model = joblib.load(f)
         classifier = Classifier(model=model)
         intent_result = classifier.predict(query)
@@ -83,34 +83,33 @@ class IntentClassifier():
         else:
             intent_result[0] = 'not_define'
             intent_result.append(u'Chatbot chưa được học vấn đề này')
-
         return intent_result
 
-    def test_intents(self):
-
-        documents = [
-            u'Xin chào',
-            u'em là ai thế nhỉ',
-            u'sao kém thế nhỉ',
-            u'Cho hỏi chỗ mua thuốc',
-            u'em ơi cho anh hỏi giá thuốc tràng phục linh thế nào nhỉ',
-            u'giỏi đấy',
-            u'thuốc vương bảo dùng như thế nào ấy nhỉ',
-            u'cám ơn em nhé',
-            u'tạm biệt cậu nhé',
-
-        ]
+    # def test_intents(self):
+    #
+    #     documents = [
+    #         u'Xin chào',
+    #         u'em là ai thế nhỉ',
+    #         u'sao kém thế nhỉ',
+    #         u'Cho hỏi chỗ mua thuốc',
+    #         u'em ơi cho anh hỏi giá thuốc tràng phục linh thế nào nhỉ',
+    #         u'giỏi đấy',
+    #         u'thuốc vương bảo dùng như thế nào ấy nhỉ',
+    #         u'cám ơn em nhé',
+    #         u'tạm biệt cậu nhé',
+    #
+    #     ]
         # with open(os.path.join(PROJECT_PATH, 'data/tokenizer.model')) as f:
         #     model = joblib.load(f)
         # tokenizer = Tokenizer(model=model)
 
-        with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
-            model = joblib.load(f)
-
-        classifier = Classifier(model=model)
-        for document in documents:
-            labels = classifier.predict(document)
-            print(labels)
+        # with open(os.path.join(PROJECT_PATH, 'data/intents.model')) as f:
+        #     model = joblib.load(f)
+        #
+        # classifier = Classifier(model=model)
+        # for document in documents:
+        #     labels = classifier.predict(document)
+        #     print(labels)
 
 
 

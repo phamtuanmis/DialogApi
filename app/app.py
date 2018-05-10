@@ -15,7 +15,6 @@ app = Flask(__name__)
 cors = CORS(app)
 
 threshold_confidence = 0.5
-
 @app.errorhandler(400)
 def not_found(error):
     return make_response(jsonify({'error': 'Bad request! Thiếu thông tin'}), 400)
@@ -39,26 +38,39 @@ def processRequest(req):
     query = req["query"]
     query = normalize_text(query)
     sessionId = req["sessionId"]
-
     Intent_Class = IntentClassifier()
     intent = Intent_Class.classify_intent(query,threshold_confidence=threshold_confidence)
-
     entity_class = EntityClassifier()
     entities = entity_class.predict_entiy(query)
-
+    intentname,confidence,response = intent[0], intent[1],intent[2]
     response = {
         'sessionId': sessionId,
         'resolvedQuery': query,
-        'intentName':intent[0],
-        'confidence': intent[1],
-        'response': intent[2],
-        'entities':entities,
+        'intentName':intentname,
+        'confidence': confidence,
+        'response':  [{"speech": response},],
+        # 'entities':entities
     }
+
+    list_entities,my_list = [],[]
+    for entity in entities:
+        if entity[1] not in list_entities:
+            list_entities.append(entity[1])
+    for my_entity in list_entities:
+        dict_temp = {}
+        temp_list = []
+        for entity in entities:
+            if entity[1]==my_entity:
+                temp_list.append(entity[0])
+        dict_temp[my_entity] = temp_list
+        my_list.append(dict_temp)
+
+    response['entities'] = my_list
     return response
 
 
 @app.route('/train', methods=['POST'])
-# @cross_origin()
+@cross_origin()
 
 
 def train():
@@ -82,6 +94,6 @@ def processTrain(req):
 
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
+    port = int(os.getenv('PORT', 5555))
     print("Starting app on port %d" % port)
     app.run(debug=False, port=port,host = '0.0.0.0')
